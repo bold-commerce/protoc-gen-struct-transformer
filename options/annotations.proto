@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+// Package transformer contains extend options for protobuf files, messages and
+// fields.
+// Options are used for customizing transformation process.
+package transformer;
+option go_package = "options";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+  // Path to source file with Go structures which will be used as destination.
+  string go_models_file_path = 5201;
+  // Package name which contains model structures.
+  string go_repo_package = 5202;
+  // Package name with protobuf srtuctures.
+  string go_protobuf_package = 5203;
+}
+
+extend google.protobuf.MessageOptions {
+  // Name of structure from repo package.
+  string go_struct = 5100;
+}
+
+extend google.protobuf.FieldOptions {
+  // Embed is used when transformed structures should be embed into parent one.
+  // It's the same as gogoproto.embed flag, but right now I can't read
+  // gogoproto.embed option.
+  // DEPRECATED, use gogooproto.embed instead.
+  bool embed = 5300;
+  // If true, field will not be used in transform functions.
+  bool skip = 5301;
+  // Points destination field type for OneOf fields.
+  // string one_of_to = 5302;
+  // Contains model's field name if it's different from name in messages.
+  string map_to = 5303;
+  // Contains name which will be used instead of current field name.
+  //
+  // string street_1 = 1; -> pb.go Street_1 instead Street1
+  string map_as = 5304;
+}

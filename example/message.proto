@@ -1,0 +1,94 @@
+syntax = "proto3";
+package svc.example;
+
+option (transformer.go_repo_package) = "model";
+option (transformer.go_protobuf_package) = "example";
+option (transformer.go_models_file_path) = "example/model/model.go";
+option go_package = "example"; // Package name for pb.go
+
+import "options/annotations.proto";
+import "protobuf/gogoproto/gogo.proto"; // for gogoproto options
+
+message TheOne{
+  oneof the_decl {
+    string string_value = 1;
+    int64 int64_value = 2;
+  }
+}
+
+message Product {
+  option (transformer.go_struct) = "Product";
+
+  int32 id = 1;
+  string name = 2;
+  TheOne one = 3;
+  TheOne second_id = 4;
+}
+
+message Order {
+  option (transformer.go_struct) = "Order";
+
+  int64 id = 1;
+  TheOne first_id = 2;
+  TheOne second_id = 3;
+  TheOne third_url = 4;
+}
+
+message Address {
+  option (transformer.go_struct) = "Address";
+
+  int64 id = 1;
+  string type = 2;
+}
+
+message Customer {
+  option (transformer.go_struct) = "Customer";
+
+  int64 id = 1;
+  string name = 2;
+
+  repeated Address addresses = 3;
+  Address default_address = 4;
+  Address billing_address = 5 [ (gogoproto.nullable) = false ];
+
+  string map_field_1 = 6 [
+    (transformer.map_as) = "MapField_1",
+    (transformer.map_to) = "MapField1"
+  ];
+  string map_field_to_without_digits = 7 [ (transformer.map_to) = "MapField2" ];
+}
+
+
+// opposite message order, usage of LineItem is earlier than message is defined.
+message LineItemUsage {
+  option (transformer.go_struct) = "MyLineItemUsage";
+
+  LineItem Item = 1;
+  repeated LineItem List = 2;
+}
+
+message LineItem {
+  option (transformer.go_struct) = "MyLineItem";
+
+  int64 ID = 1;
+  string Type = 2;
+  // SomeField will not be added to transformation function.
+  string some_field = 3 [ (transformer.skip) = true ];
+}
+
+message Value2Pointer {
+  option (transformer.go_struct) = "Value2Pointer";
+
+  // In message.pb.go Address field will be of type Address.
+  Address address_nil = 1 [ (gogoproto.nullable) = false ];
+}
+
+message Pointer2Value {
+  option (transformer.go_struct) = "Pointer2Value";
+
+  // In message.pb.go Address field will be of type *Address.
+  Address address_not_nil = 1;
+}
+
+message SkippedMessageOne {} // skip it because it hasn't transformer.go_struct option.
+message SkippedMessageTwo {} // skip it because it hasn't transformer.go_struct option.
