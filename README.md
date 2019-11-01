@@ -1,6 +1,7 @@
 # Transformation function generator for gRPC.
 
-[![GoDoc](https://godoc.org/github.com/bold-commerce/protoc-gen-struct-transformer?status.svg)](https://godoc.org/github.com/bold-commerce/protoc-gen-struct-transformer)
+[![Build Status](https://travis-ci.com/bold-commerce/protoc-gen-struct-transformer.svg?branch=master)](https://travis-ci.com/bold-commerce/protoc-gen-struct-transformer)
+ [![GoDoc](https://godoc.org/github.com/bold-commerce/protoc-gen-struct-transformer?status.svg)](https://godoc.org/github.com/bold-commerce/protoc-gen-struct-transformer)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/bold-commerce/protoc-gen-struct-transformer?sort=semver)](https://github.com/bold-commerce/protoc-gen-struct-transformer/releases)
 [![BSD-3-Clause](https://img.shields.io/github/license/bold-commerce/protoc-gen-struct-transformer)](./LICENSE)
 
