@@ -1,12 +1,13 @@
 # Transformation function generator for gRPC.
 
 [![Build Status](https://travis-ci.com/bold-commerce/protoc-gen-struct-transformer.svg?branch=master)](https://travis-ci.com/bold-commerce/protoc-gen-struct-transformer)
- [![GoDoc](https://godoc.org/github.com/bold-commerce/protoc-gen-struct-transformer?status.svg)](https://godoc.org/github.com/bold-commerce/protoc-gen-struct-transformer)
+[![GoDoc](https://godoc.org/github.com/bold-commerce/protoc-gen-struct-transformer?status.svg)](https://godoc.org/github.com/bold-commerce/protoc-gen-struct-transformer)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/bold-commerce/protoc-gen-struct-transformer?sort=semver)](https://github.com/bold-commerce/protoc-gen-struct-transformer/releases)
 [![BSD-3-Clause](https://img.shields.io/github/license/bold-commerce/protoc-gen-struct-transformer)](./LICENSE)
 
 <!-- vim-markdown-toc GitHub -->
 
+* [Quick presentation](#quick-presentation)
 * [Overview](#overview)
 * [How to use](#how-to-use)
   * [Install](#install)
@@ -16,6 +17,9 @@
   * [CLI parameters](#cli-parameters)
 
 <!-- vim-markdown-toc -->
+
+## Quick presentation
+[Speakerdeck](https://speakerdeck.com/ekhabarov/protoc-gen-struct-transformer)
 
 ## Overview
 [Protocol buffers complier](https://github.com/protocolbuffers/protobuf) `protoc` generated structures based on message
