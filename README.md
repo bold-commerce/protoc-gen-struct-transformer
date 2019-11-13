@@ -10,7 +10,9 @@
 * [Quick presentation](#quick-presentation)
 * [Overview](#overview)
 * [How to use](#how-to-use)
-  * [Install](#install)
+  * [Installation](#installation)
+    * [Homebrew](#homebrew)
+    * [go get](#go-get)
   * [Add options to *.proto file](#add-options-to-proto-file)
   * [Run protoc](#run-protoc)
   * [Use generated functions in your gRPC server implementation.](#use-generated-functions-in-your-grpc-server-implementation)
@@ -135,14 +137,29 @@ Full example you can find in [example](./example) directory.
 
 ## How to use
 
-### Install
+### Installation
 I assume you already have `protoc` installed.
 
-First of all, it's necessary to install plugin itself, its just a binary file,
+First of all, it's necessary to install plugin itself, it's just a binary file,
 which should be placed into $PATH to be available for `protoc`.
+
+#### Homebrew
+
 ```shell
-go get -u github.com/bold-commerce/protoc-gen-struct-transformer
+% brew tap bold-commerce/tap
+% brew install protoc-gen-struct-transformer
 ```
+
+#### go get
+If you're going to make changes to plugin, use `go get ...` or `git clone ...`
+
+```shell
+% go get -u -d github.com/bold-commerce/protoc-gen-struct-transformer
+% cd $GOPATH/src/github.com/bold-commerce/protoc-gen-struct-transformer
+// make changes
+% go install
+```
+
 Next, we need `protoc-gen-go` plugin (or `protoc-gen-gogofaster` if you use
 `gogo` specific options) which creates `*.pb.go` file.
 ```shell
