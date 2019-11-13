@@ -5,7 +5,7 @@
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/bold-commerce/protoc-gen-struct-transformer?sort=semver)](https://github.com/bold-commerce/protoc-gen-struct-transformer/releases)
 [![BSD-3-Clause](https://img.shields.io/github/license/bold-commerce/protoc-gen-struct-transformer)](./LICENSE)
 
-<!-- vim-markdown-toc GitHub -->
+<!-- vim-markdown-toc GFM -->
 
 * [Quick presentation](#quick-presentation)
 * [Overview](#overview)

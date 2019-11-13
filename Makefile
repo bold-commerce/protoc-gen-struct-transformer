@@ -1,3 +1,7 @@
+VERSION=1.0.1-dev
+BUILDTIME=$(shell date +"%Y-%m-%dT%T%z")
+LDFLAGS= -ldflags '-X github.com/bold-commerce/protoc-gen-struct-transformer/generator.version=$(VERSION) -X github.com/bold-commerce/protoc-gen-struct-transformer/generator.buildTime=$(BUILDTIME)'
+
 .PHONY: re-generate-example
 re-generate-example:
 	protoc \
@@ -13,8 +17,9 @@ imports:
 .PHONY: generate
 generate: re-generate-example imports
 
-install: VERSION=1.0.0-dev
-install: SHA1=$(shell git rev-parse --short HEAD)
-install: BUILDTIME=$(shell date +"%Y-%m-%d_%H:%M:%S")
 install:
-	go install -ldflags '-X github.com/bold-commerce/protoc-gen-struct-transformer/generator.gitHash=$(SHA1) -X github.com/bold-commerce/protoc-gen-struct-transformer/generator.version=$(VERSION) -X github.com/bold-commerce/protoc-gen-struct-transformer/generator.buildTime=$(BUILDTIME)'
+	go install $(LDFLAGS)
+
+build: OUTPUT=.
+build:
+	go build $(LDFLAGS) -o $(OUTPUT)
