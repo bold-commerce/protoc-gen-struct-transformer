@@ -3,7 +3,7 @@ package source
 import "fmt"
 
 type (
-	// FieldInfo containt information about one structure field without field name.
+	// FieldInfo contains information about one structure field without field name.
 	FieldInfo struct {
 		// Field type name.
 		Type string
@@ -25,4 +25,11 @@ func (s Structure) String() string {
 	}
 	c += "\n"
 	return c
+}
+
+func (fi FieldInfo) String() string {
+	if fi.IsPointer {
+		return "*" + fi.Type
+	}
+	return fi.Type
 }

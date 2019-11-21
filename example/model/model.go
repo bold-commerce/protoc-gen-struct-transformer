@@ -1,5 +1,11 @@
 package model
 
+import (
+	"time"
+
+	"github.com/bold-commerce/protoc-gen-struct-transformer/example/nulls"
+)
+
 type (
 	Product struct {
 		ID       int    `db:"id" json:"id"`
@@ -46,5 +52,16 @@ type (
 
 	Pointer2Value struct {
 		AddressNotNil Address
+	}
+
+	// TimeModel is used for testing time-related transformations.
+	TimeModel struct {
+		TimeTime     time.Time
+		PtrTimeTime  *time.Time
+		NullsTime    nulls.Time
+		PtrNullsTime *nulls.Time
+
+		NullsTime2    nulls.Time
+		PtrNullsTime2 *nulls.Time
 	}
 )

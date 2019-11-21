@@ -2,24 +2,26 @@
 
 
 [[projects]]
-  digest = "1:faf8721991f3a43d98974cf205839da9b87db4f1885a580bc719174a650d1d61"
+  digest = "1:df65073541fb5daf6bacab29e27ca59039967e9e678a0747174c993f96a66b53"
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
     "proto",
     "protoc-gen-gogo/descriptor",
     "protoc-gen-gogo/plugin",
+    "sortkeys",
+    "types",
   ]
   pruneopts = "UT"
   revision = "0ca988a254f991240804bf9821f3450d87ccbb1b"
   version = "v1.3.0"
 
 [[projects]]
-  digest = "1:500eb6e1e42991b51d2cc0c5bc9e47043f7eec8fe4a9b100b85abf49cfb910db"
+  digest = "1:6259f2cb21d8e1b9009b9c490fa389645cc198a1893abac46467a4f7854f8356"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
-    "protoc-gen-go/descriptor",
+    "ptypes/timestamp",
   ]
   pruneopts = "UT"
   revision = "6c65a5562fc06764971b7c5d05c76c75e84bdbf7"
@@ -76,13 +78,13 @@
   version = "v1.10.1"
 
 [[projects]]
-  digest = "1:f10e746cdde740b68ae11142c351de99e8a669c5aa5a2df9ac10294cb052ab39"
+  digest = "1:4397c637db07464ef41f882eb1b43b8fc3ba0357e1f3af2eeb8ef79cd661e76c"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
     "format",
-    "gbytes",
-    "gexec",
+    "gstruct",
+    "gstruct/errors",
     "internal/assertion",
     "internal/asyncassertion",
     "internal/oraclematcher",
@@ -97,6 +99,14 @@
   pruneopts = "UT"
   revision = "bdebf9e0ece900259084cfa4121b97ce1a540939"
   version = "v1.7.0"
+
+[[projects]]
+  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
 
 [[projects]]
   branch = "master"
@@ -177,13 +187,15 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/protoc-gen-gogo/descriptor",
     "github.com/gogo/protobuf/protoc-gen-gogo/plugin",
+    "github.com/gogo/protobuf/types",
     "github.com/golang/protobuf/proto",
-    "github.com/golang/protobuf/protoc-gen-go/descriptor",
+    "github.com/golang/protobuf/ptypes/timestamp",
     "github.com/iancoleman/strcase",
     "github.com/onsi/ginkgo",
     "github.com/onsi/ginkgo/extensions/table",
     "github.com/onsi/gomega",
-    "github.com/onsi/gomega/gexec",
+    "github.com/onsi/gomega/gstruct",
+    "github.com/pkg/errors",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

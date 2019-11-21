@@ -30,13 +30,17 @@ type myString string
 
 type (
 	MyStruct struct {
-		ID       int
-		Name     string
+		I   int
+		PI  *int
+		S		string
+		PS	*string
 	}
 )`, StructureList{
 			"MyStruct": {
-				"ID":   {Type: "int", IsPointer: false},
-				"Name": {Type: "string", IsPointer: false},
+				"I":  {Type: "int", IsPointer: false},
+				"PI": {Type: "int", IsPointer: true},
+				"S":  {Type: "string", IsPointer: false},
+				"PS": {Type: "string", IsPointer: true},
 			},
 		}),
 
@@ -144,9 +148,9 @@ type (
 	}
 )`, StructureList{
 			"MyStruct": {
-				"ID":                     {Type: "int", IsPointer: false},
-				"Name":                   {Type: "string", IsPointer: false},
-				"unsupported_array_type": {Type: "empty_type", IsPointer: false},
+				"ID":                                    {Type: "int", IsPointer: false},
+				"Name":                                  {Type: "string", IsPointer: false},
+				"unsupported_array_type_*ast.ArrayType": {Type: "*ast.MapType", IsPointer: false},
 			},
 		}),
 
@@ -164,21 +168,39 @@ type (
 			},
 		}),
 
+		Entry("File with one struct, field is of types time.Time/*time.Time.", `package model
+
+		type (
+			MyStruct struct {
+				ID	 int
+				Name string
+				T time.Time
+				PT *time.Time
+			}
+		)`, StructureList{
+			"MyStruct": {
+				"ID":   {Type: "int", IsPointer: false},
+				"Name": {Type: "string", IsPointer: false},
+				"T":    {Type: "time.Time", IsPointer: false},
+				"PT":   {Type: "time.Time", IsPointer: true},
+			},
+		}),
+
 		Entry("File with one struct, field is of unsupported type.", `package model
 
 type (
 	MyStruct struct {
-		ID	 int
-		Name string
-		F func()
-		M map[int]string
+		I		int
+		F		func()
+		M		map[int]string
+		PM	*map[int]string
 	}
 )`, StructureList{
 			"MyStruct": {
-				"ID":                        {Type: "int", IsPointer: false},
-				"Name":                      {Type: "string", IsPointer: false},
-				"unsupported_*ast.FuncType": {Type: "*ast.FuncType", IsPointer: false},
-				"unsupported_*ast.MapType":  {Type: "*ast.MapType", IsPointer: false},
+				"I":                                   {Type: "int", IsPointer: false},
+				"unsupported_*ast.FuncType":           {Type: "*ast.FuncType", IsPointer: false},
+				"unsupported_*ast.MapType":            {Type: "*ast.MapType", IsPointer: false},
+				"unsupported_star_expr_*ast.StarExpr": {Type: "*ast.MapType", IsPointer: false},
 			},
 		}),
 	)

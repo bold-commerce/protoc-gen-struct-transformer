@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
+	pkgerrors "github.com/pkg/errors"
 )
 
 var _ = Describe("Field", func() {
@@ -47,8 +48,8 @@ var _ = Describe("Field", func() {
 
 				DescribeTable("check Field stuct",
 
-					func(pname, gname, ftype string, expected Field) {
-						got := wktgoogleProtobufTimestamp(pname, gname, ftype)
+					func(pname, gname, typ string, gp, pnullable bool, expected Field) {
+						got := wktgoogleProtobufTimestamp(pname, gname, source.FieldInfo{Type: typ, IsPointer: gp}, pnullable)
 
 						Expect(*got).To(MatchAllFields(Fields{
 							"Name":           Equal(expected.Name),
@@ -64,21 +65,21 @@ var _ = Describe("Field", func() {
 						}))
 					},
 
-					Entry("Field not found", "protoName", "name", "AnyType", Field{
+					Entry("Field not found", "protoName", "name", "AnyType", false, false, Field{
 						Name:          "name",
 						ProtoName:     "protoName",
-						ProtoToGoType: "AnyTypeToTimePtr",
-						GoToProtoType: "TimePtrToAnyType",
+						ProtoToGoType: "AnyTypeToTime",
+						GoToProtoType: "TimeToAnyType",
 						UsePackage:    true,
 					}),
-					Entry("String", "protoName", "name", "string", Field{
+					Entry("String", "protoName", "name", "string", false, false, Field{
 						Name:          "name",
 						ProtoName:     "protoName",
-						ProtoToGoType: "StringToTimePtr",
-						GoToProtoType: "TimePtrToString",
+						ProtoToGoType: "StringToTime",
+						GoToProtoType: "TimeToString",
 						UsePackage:    true,
 					}),
-					Entry("Time", "protoName", "name", "time.Time", Field{
+					Entry("Time", "protoName", "name", "time.Time", false, false, Field{
 						Name:          "name",
 						ProtoName:     "protoName",
 						ProtoToGoType: "",
@@ -350,7 +351,8 @@ var _ = Describe("Field", func() {
 				if expectedErr == nil {
 					Expect(err).NotTo(HaveOccurred())
 				} else {
-					Expect(err).To(MatchError(expectedErr))
+					// Check just a message here.
+					Expect(err.Error()).To(Equal(expectedErr.Error()))
 				}
 
 				if expectedErr == nil {
@@ -399,7 +401,7 @@ var _ = Describe("Field", func() {
 				TypeName: sp("int64"),
 				Type:     &typInt64,
 				Options:  &descriptor.FieldOptions{},
-			}, false, false, nil, errors.New(`field "NotExists" not found in destination structure`)),
+			}, false, false, nil, pkgerrors.Wrap(errors.New("field not found in destination structure"), "NotExists")),
 
 			Entry("embed", &descriptor.FieldDescriptorProto{
 				Name:     sp("PkgTypeField"),

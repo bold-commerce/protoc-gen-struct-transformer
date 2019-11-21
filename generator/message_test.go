@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	pkgerrors "github.com/pkg/errors"
 )
 
 var _ = Describe("Message", func() {
@@ -32,7 +33,8 @@ var _ = Describe("Message", func() {
 				if expError == nil {
 					Expect(err).NotTo(HaveOccurred())
 				} else {
-					Expect(err).To(MatchError(expError))
+					// Check just a message here.
+					Expect(err.Error()).To(Equal(expError.Error()))
 				}
 
 				Expect(fields).To(Equal(expFields))
@@ -60,7 +62,7 @@ var _ = Describe("Message", func() {
 					},
 				},
 				Options: &descriptor.MessageOptions{},
-			}, "msg1", nil, "", errors.New(`field "NotExists" not found in destination structure`)),
+			}, "msg1", nil, "", pkgerrors.Wrap(errors.New("field not found in destination structure"), "NotExists")),
 
 			Entry("Message with fields", &descriptor.DescriptorProto{
 				Name: sp("Msg1"),

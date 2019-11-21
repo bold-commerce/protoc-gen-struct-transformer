@@ -8,6 +8,7 @@ option go_package = "example"; // Package name for pb.go
 
 import "options/annotations.proto";
 import "protobuf/gogoproto/gogo.proto"; // for gogoproto options
+import "google/protobuf/timestamp.proto";
 
 message TheOne{
   oneof the_decl {
@@ -92,3 +93,15 @@ message Pointer2Value {
 
 message SkippedMessageOne {} // skip it because it hasn't transformer.go_struct option.
 message SkippedMessageTwo {} // skip it because it hasn't transformer.go_struct option.
+
+message Timer {
+  option (transformer.go_struct) = "TimeModel";
+
+  google.protobuf.Timestamp time = 1            [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true, (transformer.map_to) = "TimeTime"];
+  google.protobuf.Timestamp ptr_time = 2        [ (gogoproto.nullable) = true, (gogoproto.stdtime) = true, (transformer.map_to) = "PtrTimeTime" ];
+  google.protobuf.Timestamp time_to_struct = 3  [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true, (transformer.map_to) = "NullsTime"];
+  google.protobuf.Timestamp time_to_struct_ptr = 4  [ (gogoproto.nullable) = true, (gogoproto.stdtime) = true, (transformer.map_to) = "PtrNullsTime" ];
+
+  google.protobuf.Timestamp time_ptr_to_struct = 5  [ (gogoproto.nullable) = true, (gogoproto.stdtime) = true, (transformer.map_to) = "NullsTime2"];
+  google.protobuf.Timestamp time_ptr_to_ptr_struct = 6  [ (gogoproto.nullable) = true, (gogoproto.stdtime) = true, (transformer.map_to) = "PtrNullsTime2" ];
+}

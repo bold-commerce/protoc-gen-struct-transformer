@@ -92,6 +92,10 @@ func main() {
 
 func must(err error) {
 	if err != nil {
-		log.Fatalln(err)
+		if *debug {
+			log.Fatalf("%+v", err)
+		} else {
+			log.Fatalf("%v", err)
+		}
 	}
 }
