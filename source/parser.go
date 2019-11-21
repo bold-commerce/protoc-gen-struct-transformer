@@ -55,6 +55,20 @@ func inspect(output StructureList) func(n ast.Node) bool {
 				typ := fmt.Sprintf("%s.%s", t.X.(*ast.Ident).Name, t.Sel.Name)
 				output[structName][fname] = FieldInfo{Type: typ}
 
+			case *ast.StarExpr: // pointer to something
+				switch se := t.X.(type) {
+				case *ast.Ident: // *SomeStruct, *string, *int etc.
+					typ := se.Name
+					output[structName][fname] = FieldInfo{Type: typ, IsPointer: true}
+				case *ast.SelectorExpr: // *time.Time
+					typ := fmt.Sprintf("%s.%s", se.X.(*ast.Ident).Name, se.Sel.Name)
+					output[structName][fname] = FieldInfo{Type: typ, IsPointer: true}
+				default:
+					typ := fmt.Sprintf("%s", reflect.TypeOf(t))
+					output[structName]["unsupported_star_expr_"+typ] = FieldInfo{Type: fmt.Sprintf("%T", se)}
+					return true
+				}
+
 			case *ast.ArrayType:
 				typ := "empty_type"
 				switch at := t.Elt.(type) {
@@ -63,14 +77,11 @@ func inspect(output StructureList) func(n ast.Node) bool {
 				case *ast.Ident:
 					typ = at.Name
 				default:
-					output[structName]["unsupported_array_type"] = FieldInfo{Type: typ}
+					typ := fmt.Sprintf("%s", reflect.TypeOf(t))
+					output[structName]["unsupported_array_type_"+typ] = FieldInfo{Type: fmt.Sprintf("%T", at)}
 					return true
 				}
 				output[structName][fname] = FieldInfo{Type: typ}
-
-			case *ast.StarExpr:
-				typ := t.X.(*ast.Ident).Name
-				output[structName][fname] = FieldInfo{Type: typ, IsPointer: true}
 
 			default:
 				typ := fmt.Sprintf("%s", reflect.TypeOf(t))

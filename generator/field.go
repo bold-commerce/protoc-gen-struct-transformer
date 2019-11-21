@@ -10,6 +10,7 @@ import (
 	"github.com/bold-commerce/protoc-gen-struct-transformer/source"
 	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
 	"github.com/iancoleman/strcase"
+	pkgerrors "github.com/pkg/errors"
 )
 
 // lastName splits string by "." and returns last part.
@@ -20,17 +21,24 @@ func lastName(s string) string {
 
 // wktgoogleProtobufTimestamp returns *Field created out of
 // google.protobuf.Timestamp protobuf field.
-func wktgoogleProtobufTimestamp(pname, gname, ftype string) *Field {
+func wktgoogleProtobufTimestamp(pname, gname string, gf source.FieldInfo, pnullable bool) *Field {
 	p2g := ""
 	g2p := ""
 
-	if ftype != "time.Time" {
-		g := strcase.ToCamel(strings.Replace(ftype, ".", "", -1))
-		// TODO(ekhabarov):check for null/not null options.
-		p := "TimePtr"
+	if gf.Type != "time.Time" {
+		p := strcase.ToCamel(strings.Replace(gf.Type, ".", "", -1))
+		g := "Time"
 
-		p2g = fmt.Sprintf("%sTo%s", g, p)
-		g2p = fmt.Sprintf("%sTo%s", p, g)
+		if pnullable {
+			g += "Ptr"
+		}
+
+		if gf.IsPointer {
+			p += "Ptr"
+		}
+
+		p2g = fmt.Sprintf("%sTo%s", p, g)
+		g2p = fmt.Sprintf("%sTo%s", g, p)
 	}
 
 	return &Field{
@@ -187,13 +195,13 @@ func processField(
 
 	mapTo, err := getStringOption(fdp.Options, options.E_MapTo)
 	if _, ok := err.(errOptionNotExists); err != nil && err != ErrNilOptions && !ok {
-		return nil, err
+		return nil, pkgerrors.Wrap(err, "mapTo option")
 	}
 
 	// if field has an options map_as then overwrite fieldName which is pbname
 	mapAs, err := getStringOption(fdp.Options, options.E_MapAs)
 	if _, ok := err.(errOptionNotExists); err != nil && err != ErrNilOptions && !ok {
-		return nil, err
+		return nil, pkgerrors.Wrap(err, "mapAs option")
 	}
 
 	pname, gname := prepareFieldNames(*fdp.Name, mapAs, mapTo)
@@ -203,7 +211,7 @@ func processField(
 	if !ok {
 		// do not check for embedded fields.
 		if isEmbed := extractEmbedOption(fdp.Options); !isEmbed {
-			return nil, fmt.Errorf("field %q not found in destination structure", gname)
+			return nil, pkgerrors.Wrap(errors.New("field not found in destination structure"), gname)
 		}
 	}
 
@@ -225,7 +233,8 @@ func processField(
 		t := *typ
 		switch t {
 		case ".google.protobuf.Timestamp":
-			return wktgoogleProtobufTimestamp(pname, gname, gf.Type), nil
+			isNullable := extractNullOption(fdp)
+			return wktgoogleProtobufTimestamp(pname, gname, gf, isNullable), nil
 		case ".google.protobuf.StringValue":
 			return wktgoogleProtobufString(pname, gname, gf.Type), nil
 		}
