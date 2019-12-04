@@ -167,9 +167,10 @@ func processSimpleField(w io.Writer, pname, gname string, ftype *descriptor.Fiel
 
 	// if type names are different use functions
 	if m := strings.ToLower(sf.Type); m != strings.ToLower(t.goType) {
-		t.pbType = fmt.Sprintf("%sTo%s", sf.Type, strcase.ToCamel(t.goType))
-		t.goType = fmt.Sprintf("%sTo%s", strcase.ToCamel(t.goType), sf.Type)
+		pb2go := fmt.Sprintf("%sTo%s", sf.Type, strcase.ToCamel(t.pbType))
+		t.goType = fmt.Sprintf("%sTo%s", strcase.ToCamel(t.pbType), sf.Type)
 		t.usePackage = true
+		t.pbType = pb2go
 	}
 
 	return &Field{

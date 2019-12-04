@@ -267,6 +267,7 @@ var _ = Describe("Field", func() {
 
 		var (
 			pint64 = descriptor.FieldDescriptorProto_TYPE_INT64
+			pint32 = descriptor.FieldDescriptorProto_TYPE_INT32
 		)
 
 		DescribeTable("check result",
@@ -303,13 +304,27 @@ var _ = Describe("Field", func() {
 					Opts:           "",
 				}),
 
-			Entry("Different types", "Abc", "Abc", &pint64, goStruct["StringField"],
+			Entry("Different types with int64", "Abc", "Abc", &pint64, goStruct["StringField"],
 				&Field{
 					Name:           "Abc",
 					ProtoName:      "Abc",
 					ProtoType:      "",
-					ProtoToGoType:  "StringToInt",
-					GoToProtoType:  "IntToString",
+					ProtoToGoType:  "StringToInt64",
+					GoToProtoType:  "Int64ToString",
+					GoIsPointer:    false,
+					ProtoIsPointer: false,
+					UsePackage:     true,
+					OneofDecl:      "",
+					Opts:           "",
+				}),
+
+			Entry("Different types with int32", "Abc", "Abc", &pint32, goStruct["StringField"],
+				&Field{
+					Name:           "Abc",
+					ProtoName:      "Abc",
+					ProtoType:      "",
+					ProtoToGoType:  "StringToInt32",
+					GoToProtoType:  "Int32ToString",
 					GoIsPointer:    false,
 					ProtoIsPointer: false,
 					UsePackage:     true,

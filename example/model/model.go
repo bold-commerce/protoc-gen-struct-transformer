@@ -64,4 +64,12 @@ type (
 		NullsTime2    nulls.Time
 		PtrNullsTime2 *nulls.Time
 	}
+
+	IntsModel struct {
+		IntFor64Value int
+		IntFor32Value int
+		Int32Value    int32
+		Int64Value    int64
+		StringValue   string
+	}
 )
