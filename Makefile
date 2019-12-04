@@ -1,4 +1,4 @@
-VERSION=1.0.2-dev
+VERSION=1.0.3-dev
 BUILDTIME=$(shell date +"%Y-%m-%dT%T%z")
 LDFLAGS= -ldflags '-X github.com/bold-commerce/protoc-gen-struct-transformer/generator.version=$(VERSION) -X github.com/bold-commerce/protoc-gen-struct-transformer/generator.buildTime=$(BUILDTIME)'
 

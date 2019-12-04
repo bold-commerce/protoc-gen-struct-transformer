@@ -105,3 +105,13 @@ message Timer {
   google.protobuf.Timestamp time_ptr_to_struct = 5  [ (gogoproto.nullable) = true, (gogoproto.stdtime) = true, (transformer.map_to) = "NullsTime2"];
   google.protobuf.Timestamp time_ptr_to_ptr_struct = 6  [ (gogoproto.nullable) = true, (gogoproto.stdtime) = true, (transformer.map_to) = "PtrNullsTime2" ];
 }
+
+message Ints {
+  option (transformer.go_struct) = "IntsModel";
+
+  int32 int_for_32_value = 1 [ (transformer.map_to) = "IntFor32Value", (transformer.map_as) = "IntFor_32Value" ];
+  int64 int_for_64_value = 2 [ (transformer.map_to) = "IntFor64Value", (transformer.map_as) = "IntFor_64Value"];
+  int32 int32_value = 3;
+  int64 int64_value = 4;
+  int64 string_value = 5;
+}
