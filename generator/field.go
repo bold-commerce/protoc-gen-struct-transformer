@@ -26,15 +26,15 @@ func wktgoogleProtobufTimestamp(pname, gname string, gf source.FieldInfo, pnulla
 	g2p := ""
 
 	if gf.Type != "time.Time" {
-		p := strcase.ToCamel(strings.Replace(gf.Type, ".", "", -1))
-		g := "Time"
+		g := strcase.ToCamel(strings.Replace(gf.Type, ".", "", -1))
+		p := "Time"
 
 		if pnullable {
-			g += "Ptr"
+			p += "Ptr"
 		}
 
 		if gf.IsPointer {
-			p += "Ptr"
+			g += "Ptr"
 		}
 
 		p2g = fmt.Sprintf("%sTo%s", p, g)
@@ -59,8 +59,8 @@ func wktgoogleProtobufString(pname, gname, ftype string) *Field {
 	return &Field{
 		Name:          gname,
 		ProtoName:     pname,
-		ProtoToGoType: fmt.Sprintf("%sTo%s", g, p),
-		GoToProtoType: fmt.Sprintf("%sTo%s", p, g),
+		ProtoToGoType: fmt.Sprintf("%sTo%s", p, g),
+		GoToProtoType: fmt.Sprintf("%sTo%s", g, p),
 		UsePackage:    true,
 	}
 }
@@ -75,7 +75,7 @@ func wktgoogleProtobufString(pname, gname, ftype string) *Field {
 // message B { A a_field = 1; }
 func processSubMessage(w io.Writer,
 	fdp *descriptor.FieldDescriptorProto,
-	pname, gname, pbType string,
+	pname, gname, pbtype string,
 	mo MessageOption,
 	goStructFields source.Structure,
 ) (*Field, error) {
@@ -89,43 +89,50 @@ func processSubMessage(w io.Writer,
 	}
 
 	tpl := "%sTo%s"
-	mtype := "Pb"
+	pb := "Pb"
+
+	p2g := ""
+	g2p := ""
 
 	if mo != nil {
 		if mo.OneofDecl() != "" {
-			mtype = strcase.ToCamel(goStructFields[gname].Type)
+			pb = strcase.ToCamel(goStructFields[gname].Type)
 		} else {
-			pbType = mo.Target()
+			pb, pbtype = mo.Target(), pb
 		}
+
+		pb = strcase.ToCamel(pb)
 	}
 
 	if l := fdp.Label; l != nil && *l == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 		tpl += "List"
-		// TODO(ekhabarov): use gname instead of *fdp.Name
-		if p, ok := goStructFields[strcase.ToCamel(*fdp.Name)]; ok {
-			pbType = p.Type
+		if g, ok := goStructFields[gname]; ok {
+			pb = strcase.ToCamel(g.Type)
 		}
 	}
 
 	// embedded fields
-	pbType = lastName(pbType)
 	fname := gname
 	if isEmbed := extractEmbedOption(fdp.Options); isEmbed {
 		// if sub message is embedded use type name as field name.
-		fname = pbType
+		fname = pb
+		pb = strcase.ToCamel(pb)
 	}
 
-	// p(w, "// tpl: %q\n", tpl)
-
+	if ln := lastName(pbtype); strings.Contains(pbtype, ".") {
+		pbtype = strcase.ToCamel(ln)
+	}
 	isNullable := extractNullOption(fdp)
-	// p(w, "// field is nullable: %t\n", isNullable)
+
+	p2g = fmt.Sprintf(tpl, pbtype, pb)
+	g2p = fmt.Sprintf(tpl, pb, pbtype)
 
 	f := &Field{
 		Name:           strcase.ToCamel(fname),
 		ProtoName:      strcase.ToCamel(*fdp.Name),
-		ProtoType:      pbType,
-		ProtoToGoType:  fmt.Sprintf(tpl, pbType, mtype),
-		GoToProtoType:  fmt.Sprintf(tpl, mtype, pbType),
+		ProtoType:      pbtype,
+		ProtoToGoType:  p2g,
+		GoToProtoType:  g2p,
 		Opts:           ", opts...",
 		ProtoIsPointer: isNullable,
 	}
@@ -145,41 +152,50 @@ func processSubMessage(w io.Writer,
 // so on.
 func processSimpleField(w io.Writer, pname, gname string, ftype *descriptor.FieldDescriptorProto_Type, sf source.FieldInfo) (*Field, error) {
 
-	sf.Type = strcase.ToCamel(strings.Replace(sf.Type, ".", "", -1))
-
+	sf.Type = strcase.ToCamel(strings.Replace(sf.Type, ".", "", -1)) // pkg.Type => PkgType
 	t := types[*ftype]
 
 	// sf: NullsString, pbType: , goType: string, ft: TYPE_STRING, name: Tags, pbaname: Tags
 	p(w, "// sf: %#v, pbType: %q, goType: %q, ft: %q, pname: %q, gname: %q\n",
 		sf, t.pbType, t.goType, ftype, pname, gname)
 
-	// do not cast eponymous types
-	// sf: Int32, pbType: int32, goType: int, ft: TYPE_INT32, name: I32, pbaname: I32
-	if m := strings.ToLower(sf.Type); m == strings.ToLower(t.pbType) {
-		// simple convertions like int(field)
-		return &Field{
-			Name:          gname,
-			ProtoName:     pname,
-			ProtoToGoType: "",
-			GoToProtoType: m,
-		}, nil
+	sft := strings.ToLower(sf.Type)
+	tpb := strings.ToLower(t.pbType)
+	tgo := strings.ToLower(t.goType)
+
+	f := &Field{
+		Name:      gname,
+		ProtoName: pname,
 	}
 
-	// if type names are different use functions
-	if m := strings.ToLower(sf.Type); m != strings.ToLower(t.goType) {
-		pb2go := fmt.Sprintf("%sTo%s", sf.Type, strcase.ToCamel(t.pbType))
-		t.goType = fmt.Sprintf("%sTo%s", strcase.ToCamel(t.pbType), sf.Type)
-		t.usePackage = true
-		t.pbType = pb2go
+	switch true {
+
+	case (sft == tpb && tpb != "") || (sft == tgo && tpb == ""): // equal types
+		f.ProtoToGoType = ""
+		f.GoToProtoType = ""
+
+	case sft != tgo:
+		p := t.pbType
+		if p == "" {
+			p = t.goType
+		}
+
+		f.ProtoToGoType = fmt.Sprintf("%sTo%s", strcase.ToCamel(p), sf.Type)
+		f.GoToProtoType = fmt.Sprintf("%sTo%s", sf.Type, strcase.ToCamel(p))
+		f.UsePackage = true
+
+	case sft != tpb:
+		p(w, "// sft: %s, tpb: %s\n", sft, tpb)
+		f.ProtoToGoType = sft
+		f.GoToProtoType = tpb
+
+	default:
+		f.ProtoToGoType = t.pbType
+		f.GoToProtoType = t.goType
+		f.UsePackage = t.usePackage
 	}
 
-	return &Field{
-		Name:          gname,
-		ProtoName:     pname,
-		ProtoToGoType: t.pbType,
-		GoToProtoType: t.goType,
-		UsePackage:    t.usePackage,
-	}, nil
+	return f, nil
 }
 
 // processField returns filled Field struct for template.

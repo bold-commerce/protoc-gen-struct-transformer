@@ -137,7 +137,7 @@ func {{ template "FuncName" . }}List(src []{{ .SrcPointer }}{{ template "SrcPara
 
 `
 
-	tplOneof = `
+	oneofT = `
 type Oneof{{ .Decl }} interface {
 	GetStringValue() string
 	GetInt64Value() int64
@@ -168,7 +168,7 @@ func {{ .GoType }}To{{ .ProtoType }}(s string, dst *{{ .ProtoPackage }}.{{ .Prot
 
 `
 
-	tplOption = `var version string
+	optionsT = `var version string
 
 // TransformParam is a function option type.
 type TransformParam func()
@@ -233,7 +233,7 @@ func (f Field) IsOneof() bool {
 	return f.OneofDecl != ""
 }
 
-// name based on swapped flag return Name of ProtoName for current Field.
+// name based on swapped flag return Name or ProtoName for current Field.
 func (f Field) name(swapped bool) string {
 	if swapped {
 		return f.Name
@@ -241,12 +241,12 @@ func (f Field) name(swapped bool) string {
 	return f.ProtoName
 }
 
-// typ based on swapped flag and value of Field properties returns a type name
+// convertFunc based on swapped flag and value of Field properties returns a type name
 // for current Field.
-func (f Field) typ(swapped bool) string {
-	out := f.GoToProtoType
+func (f Field) convertFunc(swapped bool) string {
+	out := f.ProtoToGoType
 	if swapped {
-		out = f.ProtoToGoType
+		out = f.GoToProtoType
 	}
 
 	if f.GoIsPointer && f.ProtoIsPointer {
@@ -318,11 +318,12 @@ func formatOneofInitField(f Field, swapped bool) string {
 		return ""
 	}
 	return fmt.Sprintf(" %s(src.%s, s.%s, version)", f.GoToProtoType, f.Name, f.ProtoName)
+
 }
 
 func formatComplexField(f Field, swapped bool) string {
 	if f.ProtoToGoType != "" {
-		return fmt.Sprintf(" %s(src.%s %s)", f.typ(swapped), f.name(swapped), f.Opts)
+		return fmt.Sprintf(" %s(src.%s %s)", f.convertFunc(swapped), f.name(swapped), f.Opts)
 	}
 
 	return fmt.Sprintf("src.%s", f.name(swapped))

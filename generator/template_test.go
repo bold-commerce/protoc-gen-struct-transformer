@@ -13,7 +13,7 @@ import (
 func xEntry(g2p, p2g string, gg, pp, swapped bool, expected string) TableEntry {
 	args := []interface{}{g2p, p2g, gg, pp, swapped, expected}
 
-	desc := fmt.Sprintf("GoToProtoType: %q, ProtoToGoType: %q, GoIsPointer: %t, ProtoIsPointer: %s, swapped: %t, expected: %q", args...)
+	desc := fmt.Sprintf("GoToProtoType: %q, ProtoToGoType: %q, GoIsPointer: %t, ProtoIsPointer: %t, swapped: %t, expected: %q", args...)
 	return Entry(desc, args...)
 }
 
@@ -39,7 +39,7 @@ var _ = Describe("Template", func() {
 			})
 		})
 
-		Context("when call typ(swapped) method", func() {
+		Context("when call convertFunc(swapped) method", func() {
 
 			DescribeTable("check result",
 				// func(swapped bool, expected string, f *Field) {
@@ -51,26 +51,26 @@ var _ = Describe("Template", func() {
 						ProtoIsPointer: pp,
 					}
 
-					r := f.typ(swapped)
+					r := f.convertFunc(swapped)
 					Expect(r).To(Equal(expected))
 				},
 
-				xEntry("go2proto", "proto2go", false, false, false, "go2proto"),
-				xEntry("go2proto", "proto2go", false, false, true, "proto2go"),
-				xEntry("go2protoList", "proto2goList", false, false, false, "go2proto"),
-				xEntry("go2protoList", "proto2goList", false, false, true, "proto2go"),
-				xEntry("go2protoList", "proto2goList", true, true, false, "go2protoListPtr"),
-				xEntry("go2protoList", "proto2goList", true, true, true, "proto2goListPtr"),
-				xEntry("go2protoList", "proto2goList", true, false, false, "go2protoValPtrList"),
-				xEntry("go2protoList", "proto2goList", true, false, true, "proto2goPtrValList"),
-				xEntry("go2protoList", "proto2goList", false, true, false, "go2protoPtrValList"),
-				xEntry("go2protoList", "proto2goList", false, true, true, "proto2goValPtrList"),
-				xEntry("go2proto", "proto2go", true, true, false, "go2protoPtr"),
-				xEntry("go2proto", "proto2go", true, true, true, "proto2goPtr"),
-				xEntry("go2proto", "proto2go", false, true, false, "go2protoPtrVal"),
-				xEntry("go2proto", "proto2go", false, true, true, "proto2goValPtr"),
-				xEntry("go2proto", "proto2go", true, false, false, "go2protoValPtr"),
-				xEntry("go2proto", "proto2go", true, false, true, "proto2goPtrVal"),
+				xEntry("go2proto", "proto2go", false, false, false, "proto2go"),
+				xEntry("go2proto", "proto2go", false, false, true, "go2proto"),
+				xEntry("go2proto", "proto2go", true, true, false, "proto2goPtr"),
+				xEntry("go2proto", "proto2go", true, true, true, "go2protoPtr"),
+				xEntry("go2proto", "proto2go", false, true, false, "proto2goPtrVal"),
+				xEntry("go2proto", "proto2go", false, true, true, "go2protoValPtr"),
+				xEntry("go2proto", "proto2go", true, false, false, "proto2goValPtr"),
+				xEntry("go2proto", "proto2go", true, false, true, "go2protoPtrVal"),
+				xEntry("go2protoList", "proto2goList", false, false, false, "proto2go"),
+				xEntry("go2protoList", "proto2goList", false, false, true, "go2proto"),
+				xEntry("go2protoList", "proto2goList", true, true, false, "proto2goListPtr"),
+				xEntry("go2protoList", "proto2goList", true, true, true, "go2protoListPtr"),
+				xEntry("go2protoList", "proto2goList", true, false, false, "proto2goValPtrList"),
+				xEntry("go2protoList", "proto2goList", true, false, true, "go2protoPtrValList"),
+				xEntry("go2protoList", "proto2goList", false, true, false, "proto2goPtrValList"),
+				xEntry("go2protoList", "proto2goList", false, true, true, "go2protoValPtrList"),
 			)
 		})
 	})
@@ -140,7 +140,7 @@ var _ = Describe("Template", func() {
 				GoIsPointer:    true,
 				ProtoIsPointer: false,
 				Opts:           ", opts...",
-			}, false, " g2pValPtr(src.proto_name , opts...)"),
+			}, false, " p2gValPtr(src.proto_name , opts...)"),
 
 			Entry("ProtoToGoType is empty", Field{
 				Name:           "name",
@@ -474,8 +474,8 @@ var _ = Describe("Template", func() {
 							Name:           "FirstField",
 							ProtoName:      "proto_name",
 							ProtoType:      "proto_type",
-							ProtoToGoType:  "FirstProto2go",
-							GoToProtoType:  "FirstGo2proto",
+							ProtoToGoType:  "FirstGo2proto",
+							GoToProtoType:  "FirstProto2go",
 							GoIsPointer:    false,
 							ProtoIsPointer: false,
 							UsePackage:     false,

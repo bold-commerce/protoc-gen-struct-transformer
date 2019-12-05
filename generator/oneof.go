@@ -25,8 +25,8 @@ func processOneofFields(w io.Writer, data []*Data) error {
 				continue
 			}
 
-			pt := strings.Split(f.GoToProtoType, "To")[0]
-			gt := strings.Split(f.ProtoToGoType, "To")[0]
+			pt := f.ProtoType
+			gt := strings.Split(f.GoToProtoType, "To")[0]
 
 			if _, ok := added[gt]; ok {
 				continue
@@ -35,16 +35,16 @@ func processOneofFields(w io.Writer, data []*Data) error {
 			added[gt] = struct{}{}
 
 			od := OneofData{
-				ProtoType:    gt,
+				ProtoType:    pt,
 				ProtoPackage: d.SrcPref,
-				GoType:       pt,
+				GoType:       gt,
 				Decl:         strcase.ToCamel(f.OneofDecl),
 				OneofDecl:    "___decl___",
 			}
 
 			t, err := template.
 				New("oneof" + f.ProtoName).
-				Parse(tplOneof)
+				Parse(oneofT)
 			if err != nil {
 				return err
 			}
@@ -64,7 +64,7 @@ func processOneofFields(w io.Writer, data []*Data) error {
 func OptHelpers(packageName string) string {
 	w := output()
 	fmt.Fprintln(w, "\npackage", packageName)
-	fmt.Fprintln(w, tplOption)
+	fmt.Fprintln(w, optionsT)
 
 	return w.String()
 }

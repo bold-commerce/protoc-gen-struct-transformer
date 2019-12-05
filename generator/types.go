@@ -9,6 +9,7 @@ type typeRel struct {
 }
 
 // types contains protobuf types.
+// default mapping for similar but non-equal types.
 var types = map[descriptor.FieldDescriptorProto_Type]typeRel{
 	descriptor.FieldDescriptorProto_TYPE_INT32:  typeRel{pbType: "int32", goType: "int"},
 	descriptor.FieldDescriptorProto_TYPE_INT64:  typeRel{pbType: "int64", goType: "int"},
