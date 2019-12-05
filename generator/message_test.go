@@ -83,7 +83,7 @@ var _ = Describe("Message", func() {
 					ProtoName:      "Int64Field",
 					ProtoType:      "",
 					ProtoToGoType:  "",
-					GoToProtoType:  "int64",
+					GoToProtoType:  "",
 					GoIsPointer:    false,
 					ProtoIsPointer: false,
 					UsePackage:     false,

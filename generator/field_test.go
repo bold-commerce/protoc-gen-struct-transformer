@@ -65,18 +65,18 @@ var _ = Describe("Field", func() {
 						}))
 					},
 
-					Entry("Field not found", "protoName", "name", "AnyType", false, false, Field{
+					Entry("Field not found", "protoName", "name", "AnyGoType", false, false, Field{
 						Name:          "name",
 						ProtoName:     "protoName",
-						ProtoToGoType: "AnyTypeToTime",
-						GoToProtoType: "TimeToAnyType",
+						ProtoToGoType: "TimeToAnyGoType",
+						GoToProtoType: "AnyGoTypeToTime",
 						UsePackage:    true,
 					}),
 					Entry("String", "protoName", "name", "string", false, false, Field{
 						Name:          "name",
 						ProtoName:     "protoName",
-						ProtoToGoType: "StringToTime",
-						GoToProtoType: "TimeToString",
+						ProtoToGoType: "TimeToString",
+						GoToProtoType: "StringToTime",
 						UsePackage:    true,
 					}),
 					Entry("Time", "protoName", "name", "time.Time", false, false, Field{
@@ -113,25 +113,25 @@ var _ = Describe("Field", func() {
 						}))
 					},
 
-					Entry("Field not found", "protoName", "name", "AnyType", Field{
+					Entry("Field not found", "protoName", "name", "AnyGoType", Field{
 						Name:          "name",
 						ProtoName:     "protoName",
-						ProtoToGoType: "AnyTypeToStringValue",
-						GoToProtoType: "StringValueToAnyType",
+						ProtoToGoType: "StringValueToAnyGoType",
+						GoToProtoType: "AnyGoTypeToStringValue",
 						UsePackage:    true,
 					}),
 					Entry("String", "protoName", "name", "int64", Field{
 						Name:          "name",
 						ProtoName:     "protoName",
-						ProtoToGoType: "Int64ToStringValue",
-						GoToProtoType: "StringValueToInt64",
+						ProtoToGoType: "StringValueToInt64",
+						GoToProtoType: "Int64ToStringValue",
 						UsePackage:    true,
 					}),
-					Entry("Time", "protoName", "name", "pkg.Type", Field{
+					Entry("pkg.Type", "protoName", "name", "pkg.Type", Field{
 						Name:          "name",
 						ProtoName:     "protoName",
-						ProtoToGoType: "PkgTypeToStringValue",
-						GoToProtoType: "StringValueToPkgType",
+						ProtoToGoType: "StringValueToPkgType",
+						GoToProtoType: "PkgTypeToStringValue",
 						UsePackage:    true,
 					}),
 				)
@@ -169,9 +169,9 @@ var _ = Describe("Field", func() {
 			Entry("Int64", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, &Field{
 				Name:           "StringField",
 				ProtoName:      "ProtoField",
-				ProtoType:      "moTarget",
-				ProtoToGoType:  "moTargetToPb",
-				GoToProtoType:  "PbTomoTarget",
+				ProtoType:      "Pb",
+				ProtoToGoType:  "PbToMoTarget",
+				GoToProtoType:  "MoTargetToPb",
 				GoIsPointer:    false,
 				ProtoIsPointer: true,
 				UsePackage:     false,
@@ -182,9 +182,9 @@ var _ = Describe("Field", func() {
 			Entry("With messageOption and empty oneof", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, &Field{
 				Name:           "StringField",
 				ProtoName:      "ProtoField",
-				ProtoType:      "moTarget",
-				ProtoToGoType:  "moTargetToPb",
-				GoToProtoType:  "PbTomoTarget",
+				ProtoType:      "Pb",
+				ProtoToGoType:  "PbToMoTarget",
+				GoToProtoType:  "MoTargetToPb",
 				GoIsPointer:    false,
 				ProtoIsPointer: true,
 				UsePackage:     false,
@@ -213,9 +213,9 @@ var _ = Describe("Field", func() {
 				&Field{
 					Name:           "StringField",
 					ProtoName:      "ProtoField",
-					ProtoType:      "type",
-					ProtoToGoType:  "typeToString",
-					GoToProtoType:  "StringTotype", // TODO(ekhabarov): should be fixed. ToType
+					ProtoType:      "Type",
+					ProtoToGoType:  "TypeToString",
+					GoToProtoType:  "StringToType",
 					GoIsPointer:    false,
 					ProtoIsPointer: true,
 					UsePackage:     false,
@@ -232,9 +232,9 @@ var _ = Describe("Field", func() {
 				&Field{
 					Name:           "StringField",
 					ProtoName:      "ProtoField",
-					ProtoType:      "FieldType",
-					ProtoToGoType:  "FieldTypeToPbList",
-					GoToProtoType:  "PbToFieldTypeList",
+					ProtoType:      "Pb",
+					ProtoToGoType:  "PbToStringList",
+					GoToProtoType:  "StringToPbList",
 					GoIsPointer:    false,
 					ProtoIsPointer: true,
 					UsePackage:     false,
@@ -251,9 +251,9 @@ var _ = Describe("Field", func() {
 				&Field{
 					Name:           "StringField",
 					ProtoName:      "ProtoField",
-					ProtoType:      "FieldType",
-					ProtoToGoType:  "FieldTypeToPbList",
-					GoToProtoType:  "PbToFieldTypeList",
+					ProtoType:      "Pb",
+					ProtoToGoType:  "PbToStringList",
+					GoToProtoType:  "StringToPbList",
 					GoIsPointer:    false,
 					ProtoIsPointer: true,
 					UsePackage:     false,
@@ -266,8 +266,9 @@ var _ = Describe("Field", func() {
 	Describe("ProcessSimpleField", func() {
 
 		var (
-			pint64 = descriptor.FieldDescriptorProto_TYPE_INT64
-			pint32 = descriptor.FieldDescriptorProto_TYPE_INT32
+			pint32  = descriptor.FieldDescriptorProto_TYPE_INT32
+			pint64  = descriptor.FieldDescriptorProto_TYPE_INT64
+			pstring = descriptor.FieldDescriptorProto_TYPE_STRING
 		)
 
 		DescribeTable("check result",
@@ -290,12 +291,40 @@ var _ = Describe("Field", func() {
 
 			},
 
-			Entry("Same types", "Abc", "Abc", &pint64, goStruct["Int64Field"],
+			Entry("Same types: int64", "Abc", "Abc", &pint64, goStruct["Int64Field"],
 				&Field{
 					Name:           "Abc",
 					ProtoName:      "Abc",
 					ProtoType:      "",
 					ProtoToGoType:  "",
+					GoToProtoType:  "",
+					GoIsPointer:    false,
+					ProtoIsPointer: false,
+					UsePackage:     false,
+					OneofDecl:      "",
+					Opts:           "",
+				}),
+
+			Entry("Same types: string", "Abc", "Abc", &pstring, goStruct["StringField"],
+				&Field{
+					Name:           "Abc",
+					ProtoName:      "Abc",
+					ProtoType:      "",
+					ProtoToGoType:  "",
+					GoToProtoType:  "",
+					GoIsPointer:    false,
+					ProtoIsPointer: false,
+					UsePackage:     false,
+					OneofDecl:      "",
+					Opts:           "",
+				}),
+
+			Entry("Similar type: int64 <=> int", "Abc", "Abc", &pint64, goStruct["IntField"],
+				&Field{
+					Name:           "Abc",
+					ProtoName:      "Abc",
+					ProtoType:      "",
+					ProtoToGoType:  "int",
 					GoToProtoType:  "int64",
 					GoIsPointer:    false,
 					ProtoIsPointer: false,
@@ -304,13 +333,13 @@ var _ = Describe("Field", func() {
 					Opts:           "",
 				}),
 
-			Entry("Different types with int64", "Abc", "Abc", &pint64, goStruct["StringField"],
+			Entry("Different types: int32", "Abc", "Abc", &pint32, goStruct["StringField"],
 				&Field{
 					Name:           "Abc",
 					ProtoName:      "Abc",
 					ProtoType:      "",
-					ProtoToGoType:  "StringToInt64",
-					GoToProtoType:  "Int64ToString",
+					ProtoToGoType:  "Int32ToString",
+					GoToProtoType:  "StringToInt32",
 					GoIsPointer:    false,
 					ProtoIsPointer: false,
 					UsePackage:     true,
@@ -318,13 +347,27 @@ var _ = Describe("Field", func() {
 					Opts:           "",
 				}),
 
-			Entry("Different types with int32", "Abc", "Abc", &pint32, goStruct["StringField"],
+			Entry("Different types: int64", "Abc", "Abc", &pint64, goStruct["StringField"],
 				&Field{
 					Name:           "Abc",
 					ProtoName:      "Abc",
 					ProtoType:      "",
-					ProtoToGoType:  "StringToInt32",
-					GoToProtoType:  "Int32ToString",
+					ProtoToGoType:  "Int64ToString",
+					GoToProtoType:  "StringToInt64",
+					GoIsPointer:    false,
+					ProtoIsPointer: false,
+					UsePackage:     true,
+					OneofDecl:      "",
+					Opts:           "",
+				}),
+
+			Entry("Custom Go type into basic proto type", "Abc", "Abc", &pstring, goStruct["PkgTypeField"],
+				&Field{
+					Name:           "Abc",
+					ProtoName:      "Abc",
+					ProtoType:      "",
+					ProtoToGoType:  "StringToPkgType",
+					GoToProtoType:  "PkgTypeToString",
 					GoIsPointer:    false,
 					ProtoIsPointer: false,
 					UsePackage:     true,
@@ -396,7 +439,7 @@ var _ = Describe("Field", func() {
 				ProtoName:      "Int64Field",
 				ProtoType:      "",
 				ProtoToGoType:  "",
-				GoToProtoType:  "int64",
+				GoToProtoType:  "",
 				GoIsPointer:    false,
 				ProtoIsPointer: false,
 				UsePackage:     false,
@@ -426,9 +469,9 @@ var _ = Describe("Field", func() {
 			}, false, true, &Field{
 				Name:           "PkgField",
 				ProtoName:      "PkgTypeField",
-				ProtoType:      "pkgField",
-				ProtoToGoType:  "pkgFieldToPb",
-				GoToProtoType:  "PbTopkgField",
+				ProtoType:      "Pb",
+				ProtoToGoType:  "PbToPkgField",
+				GoToProtoType:  "PkgFieldToPb",
 				GoIsPointer:    false,
 				ProtoIsPointer: true,
 				UsePackage:     false,
@@ -463,8 +506,8 @@ var _ = Describe("Field", func() {
 				Name:           "StringField",
 				ProtoName:      "StringField",
 				ProtoType:      "",
-				ProtoToGoType:  "StringToStringValue",
-				GoToProtoType:  "StringValueToString",
+				ProtoToGoType:  "StringValueToString",
+				GoToProtoType:  "StringToStringValue",
 				GoIsPointer:    false,
 				ProtoIsPointer: false,
 				UsePackage:     true,

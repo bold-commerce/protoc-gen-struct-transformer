@@ -56,8 +56,8 @@ var _ = Describe("Oneof", func() {
 				Fields: []Field{
 					{
 						Name:          "GoField",
-						ProtoToGoType: "proto2go",
-						GoToProtoType: "go2proto",
+						ProtoType:     "pt",
+						GoToProtoType: "gtTopt",
 						OneofDecl:     "decl_name",
 					},
 				},
@@ -80,13 +80,13 @@ var _ = Describe("Oneof", func() {
 				Fields: []Field{
 					{
 						Name:          "FirstField",
-						ProtoToGoType: "FirstProto2go",
-						GoToProtoType: "FirstGo2proto",
+						ProtoType:     "pt",
+						GoToProtoType: "gtTopt",
 					},
 					{
 						Name:          "SecondField",
-						ProtoToGoType: "SecondProto2go",
-						GoToProtoType: "SecondGo2proto",
+						ProtoType:     "pt",
+						GoToProtoType: "gtTopt",
 						OneofDecl:     "decl_name",
 					},
 				},
@@ -116,7 +116,7 @@ type OneofDeclName interface {
 	GetInt64Value() int64
 }
 
-func proto2goTogo2proto(src OneofDeclName) string {
+func ptTogt(src OneofDeclName) string {
 	if s := src.GetStringValue(); s != "" {
 		return s
 	}
@@ -128,14 +128,14 @@ func proto2goTogo2proto(src OneofDeclName) string {
 	return "<nil>"
 }
 
-func go2protoToproto2go(s string, dst *dst_pref.proto2go, v string) {
+func gtTopt(s string, dst *dst_pref.pt, v string) {
 	i, err := strconv.ParseInt(s, 10, 64)
 	if err != nil  || v == "v2"{
-		dst.DeclName = &dst_pref.proto2go_StringValue{StringValue: s}
+		dst.DeclName = &dst_pref.pt_StringValue{StringValue: s}
 		return
 	}
 
-	dst.DeclName = &dst_pref.proto2go_Int64Value{Int64Value: i}
+	dst.DeclName = &dst_pref.pt_Int64Value{Int64Value: i}
 	return
 }
 
@@ -147,7 +147,7 @@ type OneofDeclName interface {
 	GetInt64Value() int64
 }
 
-func SecondProto2goToSecondGo2proto(src OneofDeclName) string {
+func ptTogt(src OneofDeclName) string {
 	if s := src.GetStringValue(); s != "" {
 		return s
 	}
@@ -159,14 +159,14 @@ func SecondProto2goToSecondGo2proto(src OneofDeclName) string {
 	return "<nil>"
 }
 
-func SecondGo2protoToSecondProto2go(s string, dst *dst_pref.SecondProto2go, v string) {
+func gtTopt(s string, dst *dst_pref.pt, v string) {
 	i, err := strconv.ParseInt(s, 10, 64)
 	if err != nil  || v == "v2"{
-		dst.DeclName = &dst_pref.SecondProto2go_StringValue{StringValue: s}
+		dst.DeclName = &dst_pref.pt_StringValue{StringValue: s}
 		return
 	}
 
-	dst.DeclName = &dst_pref.SecondProto2go_Int64Value{Int64Value: i}
+	dst.DeclName = &dst_pref.pt_Int64Value{Int64Value: i}
 	return
 }
 
