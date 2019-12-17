@@ -2,7 +2,7 @@ VERSION=1.0.3-dev
 BUILDTIME=$(shell date +"%Y-%m-%dT%T%z")
 LDFLAGS= -ldflags '-X github.com/bold-commerce/protoc-gen-struct-transformer/generator.version=$(VERSION) -X github.com/bold-commerce/protoc-gen-struct-transformer/generator.buildTime=$(BUILDTIME)'
 
-.PHONY: re-generate-example imports generate install build version
+.PHONY: re-generate-example imports generate install build version setup
 
 re-generate-example:
 	protoc \
@@ -16,12 +16,16 @@ imports:
 
 generate: version re-generate-example imports
 
-install:
+install: setup
 	go install $(LDFLAGS)
 
 build: OUTPUT=.
-build:
+build: setup
 	go build $(LDFLAGS) -o $(OUTPUT)
 
 version:
 	protoc-gen-struct-transformer --version
+
+setup:
+	go mod download
+	go mod verify
