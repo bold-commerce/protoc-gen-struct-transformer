@@ -7,7 +7,7 @@ option (transformer.go_models_file_path) = "example/model/model.go";
 option go_package = "example"; // Package name for pb.go
 
 import "options/annotations.proto";
-import "protobuf/gogoproto/gogo.proto"; // for gogoproto options
+import "protobuf@v1.3.1/gogoproto/gogo.proto"; // for gogoproto options
 import "google/protobuf/timestamp.proto";
 
 message TheOne{

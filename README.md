@@ -17,6 +17,9 @@
   * [Run protoc](#run-protoc)
   * [Use generated functions in your gRPC server implementation.](#use-generated-functions-in-your-grpc-server-implementation)
   * [CLI parameters](#cli-parameters)
+* [Troubleshooting](#troubleshooting)
+  * [make generate returns an error](#make-generate-returns-an-error)
+    * ["protobuf@v1.3.1/gogoproto/gogo.proto" was not found or had errors.](#protobufv131gogoprotogogoproto-was-not-found-or-had-errors)
 
 <!-- vim-markdown-toc -->
 
@@ -154,6 +157,7 @@ which should be placed into $PATH to be available for `protoc`.
 If you're going to make changes to plugin, use `go get ...` or `git clone ...`
 
 ```shell
+% export GO111MODULE=on
 % go get -u -d github.com/bold-commerce/protoc-gen-struct-transformer
 % cd $GOPATH/src/github.com/bold-commerce/protoc-gen-struct-transformer
 // make changes
@@ -259,3 +263,15 @@ Usage of protoc-gen-struct-transformer:
   -version
         Print current version.
 ```
+## Troubleshooting
+
+### make generate returns an error
+#### "protobuf@v1.3.1/gogoproto/gogo.proto" was not found or had errors.
+`gogo.proto` file which is used for gogo-specific options is imported from
+go modules cache. In order to fill out the cache run:
+
+```shell
+% export GO111MODULE=on
+% go build
+```
+and run `make generate` again.
