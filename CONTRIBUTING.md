@@ -13,6 +13,5 @@ process of contribution:
 # Developers tools
 - [Protocol buffers compiler (protoc)](https://github.com/protocolbuffers/protobuf) - Google's data interchange format.
 - [protoc-gen-gogofaster](https://github.com/gogo/protobuf/tree/master/protoc-gen-gogofaster) - protoc plugin implements Go bindings for protocol buffers.
-- [goimports](golang.org/x/tools/cmd/goimports) - Command goimports updates your Go import lines, adding missing ones and removing unreferenced ones.
-- [dep](https://github.com/golang/dep#installation) - Go dependency management tool. Yeah, we still use vendor.
+- [goimports](https://golang.org/x/tools/cmd/goimports) - Command goimports updates your Go import lines, adding missing ones and removing unreferenced ones.
 - [Ginkgo](https://github.com/onsi/ginkgo#set-me-up) - BDD Testing Framework for Go.

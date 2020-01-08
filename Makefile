@@ -6,7 +6,7 @@ LDFLAGS= -ldflags '-X github.com/bold-commerce/protoc-gen-struct-transformer/gen
 
 re-generate-example:
 	protoc \
-		--proto_path=vendor/github.com/gogo:. \
+		--proto_path=$(GOPATH)/pkg/mod/github.com/gogo:. \
 		--struct-transformer_out=package=transform,debug=false,helper-package=helpers:. \
 		--gogofaster_out=Moptions/annotations.proto=github.com/bold-commerce/protoc-gen-struct-transformer/options:. \
 		./example/message.proto
