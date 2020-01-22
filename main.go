@@ -23,12 +23,14 @@ import (
 	"github.com/bold-commerce/protoc-gen-struct-transformer/generator"
 	plugin "github.com/gogo/protobuf/protoc-gen-gogo/plugin"
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/tools/imports"
 )
 
 var (
 	packageName       = flag.String("package", "fallback", "Package name for generated functions.")
 	helperPackageName = flag.String("helper-package", "", "Package name for helper functions.")
 	versionFlag       = flag.Bool("version", false, "Print current version.")
+	goimports         = flag.Bool("goimports", false, "Perform goimports on generated file.")
 	debug             = flag.Bool("debug", false, "Add debug information to generated file.")
 	usePackageInPath  = flag.Bool("use-package-in-path", true, "If true, package parameter will be used in path for output file.")
 )
@@ -65,6 +67,14 @@ func main() {
 			continue
 		}
 
+		content, err = runGoimports(filename, content)
+		if err != nil {
+			if err != generator.ErrFileSkipped {
+				must(err)
+			}
+			continue
+		}
+
 		resp.File = append(resp.File, &plugin.CodeGeneratorResponse_File{
 			Name:    proto.String(filename),
 			Content: proto.String(content),
@@ -76,9 +86,16 @@ func main() {
 	if optPath != "" {
 		optPath = filepath.Dir(optPath) + "/options.go"
 
+		content, err := runGoimports(optPath, generator.OptHelpers(*packageName))
+		if err != nil {
+			if err != generator.ErrFileSkipped {
+				must(err)
+			}
+		}
+
 		resp.File = append(resp.File, &plugin.CodeGeneratorResponse_File{
 			Name:    proto.String(optPath),
-			Content: proto.String(generator.OptHelpers(*packageName)),
+			Content: proto.String(content),
 		})
 	}
 
@@ -98,4 +115,13 @@ func must(err error) {
 			log.Fatalf("%v", err)
 		}
 	}
+}
+
+func runGoimports(filename, content string) (string, error) {
+	if *goimports == false {
+		return content, nil
+	}
+
+	formatted, err := imports.Process(filename, []byte(content), nil)
+	return string(formatted), err
 }
