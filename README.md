@@ -230,9 +230,9 @@ this command generates two files:
 * `transform/message_transformer.go` contains transformation functions.
 
 by default `message_transformer.go` does not contain imports. To add imports
-run `goimports`:
+run `protoc` with:
 ```shell
-goimports -w ./transform/message_transformer.go
+  --struct-transformer_out=package=transform,goimports=true:. \
 ```
 
 ### Use generated functions in your gRPC server implementation.
