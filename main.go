@@ -118,7 +118,7 @@ func must(err error) {
 }
 
 func runGoimports(filename, content string) (string, error) {
-	if *goimports == false {
+	if !*goimports {
 		return content, nil
 	}
 

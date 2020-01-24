@@ -1,20 +1,17 @@
-VERSION=1.0.3-dev
+VERSION=1.0.5-dev
 BUILDTIME=$(shell date +"%Y-%m-%dT%T%z")
 LDFLAGS= -ldflags '-X github.com/bold-commerce/protoc-gen-struct-transformer/generator.version=$(VERSION) -X github.com/bold-commerce/protoc-gen-struct-transformer/generator.buildTime=$(BUILDTIME)'
 
-.PHONY: re-generate-example imports generate install build version setup
+.PHONY: re-generate-example generate install build version setup
 
 re-generate-example:
 	protoc \
 		--proto_path=$(GOPATH)/pkg/mod/github.com/gogo:. \
-		--struct-transformer_out=package=transform,debug=false,helper-package=helpers:. \
+		--struct-transformer_out=package=transform,debug=false,helper-package=helpers,goimports=true:. \
 		--gogofaster_out=Moptions/annotations.proto=github.com/bold-commerce/protoc-gen-struct-transformer/options:. \
 		./example/message.proto
 
-imports:
-	$(GOBIN)/goimports -w example/transform/message_transformer.go
-
-generate: version re-generate-example imports
+generate: version re-generate-example
 
 install: setup
 	go install $(LDFLAGS)
