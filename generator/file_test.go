@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"io/ioutil"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -122,6 +123,52 @@ var _ = Describe("File", func() {
 				"message_name": messageOption{targetName: "", fullName: "", oneofDecl: "oneof_decl_name"},
 			}),
 		)
+	})
+
+	Describe("ProcessFile", func() {
+		Context("when get a header", func() {
+			var f *descriptor.FileDescriptorProto
+
+			BeforeEach(func() {
+				f = &descriptor.FileDescriptorProto{
+					Options: &descriptor.FileOptions{},
+					Name:    sp("product.proto"),
+					Package: sp("pb"),
+					MessageType: []*descriptor.DescriptorProto{
+						{
+							Name: sp("Product"),
+							Field: []*descriptor.FieldDescriptorProto{
+								&descriptor.FieldDescriptorProto{
+									Name:     sp("ID"),
+									Number:   nil,
+									Label:    nil,
+									Type:     &typInt64,
+									TypeName: nil,
+									Options:  &descriptor.FieldOptions{},
+								},
+							},
+							Options: &descriptor.MessageOptions{},
+						},
+					},
+				}
+
+				err := proto.SetExtension(f.Options, options.E_GoModelsFilePath, sp("testdata/model.go"))
+				Expect(err).NotTo(HaveOccurred())
+
+				err = proto.SetExtension(f.MessageType[0].Options, options.E_GoStruct, sp("Product"))
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("returns generated code", func() {
+				expectedContent, err := ioutil.ReadFile("testdata/processfile.go.golden")
+				Expect(err).NotTo(HaveOccurred())
+
+				absPath, content, err := ProcessFile(f, sp("product"), sp("helper-package"), map[string]MessageOption{}, false, false)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(content).To(Equal(string(expectedContent)))
+				Expect(absPath).To(Equal("product_transformer.go"))
+			})
+		})
 	})
 
 	Describe("modelPath", func() {
