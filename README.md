@@ -254,6 +254,8 @@ func (s *server) CreateProduct(ctx context.Context, req *pb.Request) (*pb.Respon
 Usage of protoc-gen-struct-transformer:
   -debug
         Add debug information to generated file.
+  -goimports
+        Perform goimports on generated file.
   -helper-package string
         Package name for helper functions.
   -package string
