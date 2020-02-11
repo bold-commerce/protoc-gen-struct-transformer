@@ -139,7 +139,7 @@ var _ = Describe("File", func() {
 							Name: sp("Product"),
 							Field: []*descriptor.FieldDescriptorProto{
 								&descriptor.FieldDescriptorProto{
-									Name:     sp("ID"),
+									Name:     sp("id"),
 									Number:   nil,
 									Label:    nil,
 									Type:     &typInt64,
