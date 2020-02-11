@@ -91,6 +91,34 @@ var _ = Describe("Message", func() {
 					Opts:           "",
 				},
 			}, "msg1", nil),
+
+			Entry("Message with ID field", &descriptor.DescriptorProto{
+				Name: sp("Msg1"),
+				Field: []*descriptor.FieldDescriptorProto{
+					&descriptor.FieldDescriptorProto{
+						Name:     sp("ID"),
+						Number:   nil,
+						Label:    nil,
+						Type:     &typInt64,
+						TypeName: nil, // sub message type
+						Options:  &descriptor.FieldOptions{},
+					},
+				},
+				Options: &descriptor.MessageOptions{},
+			}, "msg1", []Field{
+				{
+					Name:           "ID",
+					ProtoName:      "ID",
+					ProtoType:      "",
+					ProtoToGoType:  "",
+					GoToProtoType:  "",
+					GoIsPointer:    false,
+					ProtoIsPointer: false,
+					UsePackage:     false,
+					OneofDecl:      "",
+					Opts:           "",
+				},
+			}, "msg1", nil),
 		)
 	})
 

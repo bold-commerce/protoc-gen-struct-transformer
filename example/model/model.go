@@ -39,6 +39,8 @@ type (
 	MyLineItem struct {
 		ID   int
 		Type string
+		URL  string
+		SKU  int
 	}
 
 	MyLineItemUsage struct {

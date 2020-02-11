@@ -387,6 +387,10 @@ var _ = Describe("Field", func() {
 			},
 
 			Entry("Empty mapping", "proto_field_name", "", "", "ProtoFieldName", "ProtoFieldName"),
+			Entry("Field: ID", "ID", "", "", "ID", "ID"),
+			Entry("Field: id", "id", "", "", "Id", "ID"),
+			Entry("Field: Id", "Id", "", "", "Id", "ID"),
+			Entry("Field: iD", "iD", "", "", "ID", "ID"),
 			Entry("MapAs without mapTo", "proto_field_name", "map_as", "", "map_as", "map_as"),
 			Entry("MapTo without mapAs", "proto_field_name", "", "map_to", "ProtoFieldName", "map_to"),
 			Entry("MapTo and mapAs", "proto_field_name", "map_as", "map_to", "map_as", "map_to"),
@@ -437,6 +441,42 @@ var _ = Describe("Field", func() {
 			}, false, false, &Field{
 				Name:           "Int64Field",
 				ProtoName:      "Int64Field",
+				ProtoType:      "",
+				ProtoToGoType:  "",
+				GoToProtoType:  "",
+				GoIsPointer:    false,
+				ProtoIsPointer: false,
+				UsePackage:     false,
+				OneofDecl:      "",
+				Opts:           "",
+			}, nil),
+
+			Entry("int64: capitalized ID", &descriptor.FieldDescriptorProto{
+				Name:     sp("ID"),
+				TypeName: sp("int64"),
+				Type:     &typInt64,
+				Options:  &descriptor.FieldOptions{},
+			}, false, false, &Field{
+				Name:           "ID",
+				ProtoName:      "ID",
+				ProtoType:      "",
+				ProtoToGoType:  "",
+				GoToProtoType:  "",
+				GoIsPointer:    false,
+				ProtoIsPointer: false,
+				UsePackage:     false,
+				OneofDecl:      "",
+				Opts:           "",
+			}, nil),
+
+			Entry("int64: id", &descriptor.FieldDescriptorProto{
+				Name:     sp("id"),
+				TypeName: sp("int64"),
+				Type:     &typInt64,
+				Options:  &descriptor.FieldOptions{},
+			}, false, false, &Field{
+				Name:           "ID",
+				ProtoName:      "Id",
 				ProtoType:      "",
 				ProtoToGoType:  "",
 				GoToProtoType:  "",
