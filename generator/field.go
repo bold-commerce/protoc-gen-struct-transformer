@@ -290,7 +290,14 @@ func abbreviationUpper(name string) string {
 // prepareFieldNames returns names Protobuf  and Go for field, considering
 // map_to/map_as options and abbreviation rules.
 func prepareFieldNames(fname, mapAs, mapTo string) (string, string) {
-	pname := strcase.ToCamel(fname)
+	pname := fname
+
+	if strings.Contains(pname, "_") {
+		pname = strcase.ToCamel(pname)
+	} else {
+		pname = strings.Title(pname)
+	}
+
 	if mapAs != "" {
 		pname = mapAs
 	}

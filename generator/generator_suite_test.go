@@ -28,6 +28,7 @@ var (
 	// key - field name, value - field type
 	// goStruct contains model structure fields.
 	goStruct = map[string]source.FieldInfo{
+		"ID":           source.FieldInfo{Type: "int64"},
 		"StringField":  source.FieldInfo{Type: "string"},
 		"BoolField":    source.FieldInfo{Type: "bool"},
 		"IntField":     source.FieldInfo{Type: "int"},

@@ -71,10 +71,13 @@ message LineItemUsage {
 message LineItem {
   option (transformer.go_struct) = "MyLineItem";
 
-  int64 ID = 1;
+  // Capitalized ID. It's not by protobuf style guide, but supported too.
+  int64 ID = 1;         // ID-> ID, iD -> ID, id -> Id
   string Type = 2;
   // SomeField will not be added to transformation function.
   string some_field = 3 [ (transformer.skip) = true ];
+  string URL = 4;
+  int64 SKU = 5;
 }
 
 message Value2Pointer {
