@@ -15,7 +15,7 @@ func processMessage(
 	msg *descriptor.DescriptorProto,
 	subMessages map[string]MessageOption,
 	str source.StructureList,
-	debug bool,
+	fConf FileConfig,
 ) ([]Field, string, error) {
 
 	structName, err := extractStructNameOption(msg)
@@ -35,7 +35,7 @@ func processMessage(
 	}
 
 	debugWriter := (io.Writer)(nil)
-	if debug {
+	if fConf.Debug {
 		debugWriter = w
 	}
 
@@ -44,7 +44,7 @@ func processMessage(
 	fields := []Field{}
 
 	for _, f := range msg.Field {
-		pf, err := processField(debugWriter, f, subMessages, tsf)
+		pf, err := processField(debugWriter, f, subMessages, tsf, fConf)
 		if err != nil {
 			if e, ok := err.(loggableError); ok {
 				p(w, "// %s\n", e)

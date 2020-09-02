@@ -15,6 +15,8 @@ extend google.protobuf.FileOptions {
   string go_repo_package = 5202;
   // Package name with protobuf srtuctures.
   string go_protobuf_package = 5203;
+  // version of the transformer rules
+  int32 version = 5204;
 }
 
 extend google.protobuf.MessageOptions {
@@ -38,4 +40,6 @@ extend google.protobuf.FieldOptions {
   //
   // string street_1 = 1; -> pb.go Street_1 instead Street1
   string map_as = 5304;
+  // If true, the custom transformer will be used for the field.
+  bool custom = 5305;
 }
