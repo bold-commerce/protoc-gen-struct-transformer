@@ -56,6 +56,30 @@ func getStringOption(m proto.Message, opt *proto.ExtensionDesc) (string, error) 
 	return *option, nil
 }
 
+// getIntOption return any option of string type for proto.Message. If
+// option exists but has different type, function returns an error.
+func getInt32Option(m proto.Message, opt *proto.ExtensionDesc) (int32, error) {
+	if m == nil {
+		return 0, ErrNilOptions
+	}
+
+	if !proto.HasExtension(m, opt) {
+		return 0, newErrOptionNotExists(opt.Name)
+	}
+
+	ext, err := proto.GetExtension(m, opt)
+	if err != nil {
+		return 0, err
+	}
+
+	option, ok := ext.(*int32)
+	if !ok {
+		return 0, fmt.Errorf("extension is %T; want an *int", ext)
+	}
+
+	return *option, nil
+}
+
 // getBoolOption return any option of bool type for proto.Message. If
 // option exists but has different type, function returns false.
 func getBoolOption(m proto.Message, opt *proto.ExtensionDesc) bool {

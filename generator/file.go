@@ -123,10 +123,23 @@ func ProcessFile(f *descriptor.FileDescriptorProto, packageName, helperPackageNa
 		protoPackage = "pb1"
 	}
 
+	transformerVersion, err := getInt32Option(f.Options, options.E_Version)
+	if err != nil {
+		transformerVersion = 1
+	}
+	// version history:
+	// 1: inital version
+	// 2: processOneofFields is deprecated as it was solving a specific case. Please use the `custom` field option instead + custom methods
+
+	fConf := FileConfig{
+		Debug:   debug,
+		Version: transformerVersion,
+	}
+
 	var data []*Data
 
 	for _, m := range f.MessageType {
-		fields, sno, err := processMessage(w, m, messages, structs, debug)
+		fields, sno, err := processMessage(w, m, messages, structs, fConf)
 		if err != nil {
 			if e, ok := err.(loggableError); ok {
 				p(w, "// %s\n", e)
@@ -154,8 +167,11 @@ func ProcessFile(f *descriptor.FileDescriptorProto, packageName, helperPackageNa
 		return "", "", err
 	}
 
-	if err := processOneofFields(w, data); err != nil {
-		return "", "", err
+	// oneOfFields are deprecated in v2 (as they were solving only a specific scenario for oneof)
+	if fConf.Version < 2 {
+		if err := processOneofFields(w, data); err != nil {
+			return "", "", err
+		}
 	}
 
 	dir, filename := filepath.Split(*f.Name)

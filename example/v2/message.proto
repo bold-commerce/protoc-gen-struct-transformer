@@ -1,10 +1,11 @@
 syntax = "proto3";
-package svc.example;
+package svc.example.v2;
 
 option (transformer.go_repo_package) = "model";
-option (transformer.go_protobuf_package) = "example";
+option (transformer.go_protobuf_package) = "v2";
 option (transformer.go_models_file_path) = "example/model/model.go";
-option go_package = "example"; // Package name for pb.go
+option (transformer.version) = 2;
+option go_package = "v2"; // Package name for pb.go
 
 import "options/annotations.proto";
 import "protobuf@v1.3.1/gogoproto/gogo.proto"; // for gogoproto options
@@ -26,8 +27,8 @@ message Product {
 
   int32 id = 1;
   string name = 2;
-  TheOne one = 3;
-  TheOne second_id = 4;
+  TheOne one = 3  [(transformer.custom) = true];
+  TheOne second_id = 4  [(transformer.custom) = true];
   // Example of the custom transformer for the struct
   CustomType custom_field = 5 [(transformer.custom) = true];
 }
@@ -36,9 +37,9 @@ message Order {
   option (transformer.go_struct) = "Order";
 
   int64 id = 1;
-  TheOne first_id = 2;
-  TheOne second_id = 3;
-  TheOne third_url = 4;
+  TheOne first_id = 2  [(transformer.custom) = true];
+  TheOne second_id = 3 [(transformer.custom) = true];
+  TheOne third_url = 4 [(transformer.custom) = true];
 }
 
 message Address {

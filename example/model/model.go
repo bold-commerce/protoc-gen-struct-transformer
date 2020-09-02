@@ -8,10 +8,11 @@ import (
 
 type (
 	Product struct {
-		ID       int    `db:"id" json:"id"`
-		Name     string `db:"name" json:"name"`
-		One      string `db:"one" json:"one"`
-		SecondID string `db:"two" json:"two"`
+		ID          int    `db:"id" json:"id"`
+		Name        string `db:"name" json:"name"`
+		One         string `db:"one" json:"one"`
+		SecondID    string `db:"two" json:"two"`
+		CustomField string `db:"custom_field" json:"custom_field"`
 	}
 
 	Order struct {

@@ -142,14 +142,21 @@ var _ = Describe("Field", func() {
 	Describe("ProcessSubMessages", func() {
 
 		var (
-			protoField    = "proto_field"
-			goField       = "StringField"
-			labelRepeated = descriptor.FieldDescriptorProto_LABEL_REPEATED
+			protoField         = "proto_field"
+			protoFieldTypeName = "CustomType"
+			goField            = "StringField"
+			labelRepeated      = descriptor.FieldDescriptorProto_LABEL_REPEATED
+		)
+
+		const (
+			v1 = int32(1)
+			v2 = int32(2)
 		)
 
 		DescribeTable("check result",
-			func(fdp *descriptor.FieldDescriptorProto, pname, gname, pbType string, mo MessageOption, expected *Field) {
-				got, err := processSubMessage(nil, fdp, pname, gname, pbType, mo, goStruct)
+			func(fdp *descriptor.FieldDescriptorProto, pname, gname, pbType string, mo MessageOption, version int32, custom bool, expected *Field) {
+				fConf := FileConfig{Version: version}
+				got, err := processSubMessage(nil, fdp, pname, gname, pbType, mo, goStruct, custom, fConf)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(*got).To(MatchAllFields(Fields{
@@ -166,7 +173,8 @@ var _ = Describe("Field", func() {
 				}))
 			},
 
-			Entry("Int64", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, &Field{
+			// Version 1 tests
+			Entry("Int64 - V1", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, v1, false, &Field{
 				Name:           "StringField",
 				ProtoName:      "ProtoField",
 				ProtoType:      "Pb",
@@ -179,7 +187,7 @@ var _ = Describe("Field", func() {
 				Opts:           ", opts...",
 			}),
 
-			Entry("With messageOption and empty oneof", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, &Field{
+			Entry("With messageOption and empty oneof - V1", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, v1, false, &Field{
 				Name:           "StringField",
 				ProtoName:      "ProtoField",
 				ProtoType:      "Pb",
@@ -192,7 +200,7 @@ var _ = Describe("Field", func() {
 				Opts:           ", opts...",
 			}),
 
-			Entry("With messageOption and non-empty oneof", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", moWithOneOf, &Field{
+			Entry("With messageOption and non-empty oneof - V1", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", moWithOneOf, v1, false, &Field{
 				Name:           "StringField",
 				ProtoName:      "ProtoField",
 				ProtoType:      "int64",
@@ -205,11 +213,11 @@ var _ = Describe("Field", func() {
 				Opts:           ", opts...",
 			}),
 
-			Entry("With messageOption, empty oneof, and fqdn type name",
+			Entry("With messageOption, empty oneof, and fqdn type name - V1",
 				&descriptor.FieldDescriptorProto{
 					Name: &protoField,
 				},
-				protoField, goField, "full.type", moWithOneOf,
+				protoField, goField, "full.type", moWithOneOf, v1, false,
 				&Field{
 					Name:           "StringField",
 					ProtoName:      "ProtoField",
@@ -223,12 +231,12 @@ var _ = Describe("Field", func() {
 					Opts:           ", opts...",
 				}),
 
-			Entry("Repeated field",
+			Entry("Repeated field - V1",
 				&descriptor.FieldDescriptorProto{
 					Name:  &protoField,
 					Label: &labelRepeated,
 				},
-				protoField, goField, "string", mo,
+				protoField, goField, "string", mo, v1, false,
 				&Field{
 					Name:           "StringField",
 					ProtoName:      "ProtoField",
@@ -242,12 +250,198 @@ var _ = Describe("Field", func() {
 					Opts:           ", opts...",
 				}),
 
-			Entry("Repeated field when name field found in target struct.",
+			Entry("Repeated field when name field found in target struct. - V1",
 				&descriptor.FieldDescriptorProto{
 					Name:  &protoField,
 					Label: &labelRepeated,
 				},
-				protoField, goField, "string", mo,
+				protoField, goField, "string", mo, v1, false,
+				&Field{
+					Name:           "StringField",
+					ProtoName:      "ProtoField",
+					ProtoType:      "Pb",
+					ProtoToGoType:  "PbToStringList",
+					GoToProtoType:  "StringToPbList",
+					GoIsPointer:    false,
+					ProtoIsPointer: true,
+					UsePackage:     false,
+					OneofDecl:      "",
+					Opts:           ", opts...",
+				}),
+
+			Entry("Int64 - V1", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, v1, false, &Field{
+				Name:           "StringField",
+				ProtoName:      "ProtoField",
+				ProtoType:      "Pb",
+				ProtoToGoType:  "PbToMoTarget",
+				GoToProtoType:  "MoTargetToPb",
+				GoIsPointer:    false,
+				ProtoIsPointer: true,
+				UsePackage:     false,
+				OneofDecl:      "",
+				Opts:           ", opts...",
+			}),
+
+			Entry("Custom field - V1", &descriptor.FieldDescriptorProto{Name: &protoField, TypeName: &protoFieldTypeName}, protoField, goField, "int64", mo, v1, true, &Field{
+				Name:           "StringField",
+				ProtoName:      "ProtoField",
+				ProtoType:      "PbCustomType",
+				ProtoToGoType:  "PbCustomTypeToString",
+				GoToProtoType:  "StringToPbCustomType",
+				GoIsPointer:    false,
+				ProtoIsPointer: true,
+				UsePackage:     false,
+				OneofDecl:      "",
+				Opts:           ", opts...",
+			}),
+
+			Entry("With messageOption and empty oneof - V1", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, v1, false, &Field{
+				Name:           "StringField",
+				ProtoName:      "ProtoField",
+				ProtoType:      "Pb",
+				ProtoToGoType:  "PbToMoTarget",
+				GoToProtoType:  "MoTargetToPb",
+				GoIsPointer:    false,
+				ProtoIsPointer: true,
+				UsePackage:     false,
+				OneofDecl:      "",
+				Opts:           ", opts...",
+			}),
+
+			Entry("With messageOption and non-empty oneof - V1", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", moWithOneOf, v1, false, &Field{
+				Name:           "StringField",
+				ProtoName:      "ProtoField",
+				ProtoType:      "int64",
+				ProtoToGoType:  "int64ToString",
+				GoToProtoType:  "StringToint64",
+				GoIsPointer:    false,
+				ProtoIsPointer: true,
+				UsePackage:     false,
+				OneofDecl:      "oneofField",
+				Opts:           ", opts...",
+			}),
+
+			Entry("With messageOption, empty oneof, and fqdn type name - V1",
+				&descriptor.FieldDescriptorProto{
+					Name: &protoField,
+				},
+				protoField, goField, "full.type", moWithOneOf, v1, false,
+				&Field{
+					Name:           "StringField",
+					ProtoName:      "ProtoField",
+					ProtoType:      "Type",
+					ProtoToGoType:  "TypeToString",
+					GoToProtoType:  "StringToType",
+					GoIsPointer:    false,
+					ProtoIsPointer: true,
+					UsePackage:     false,
+					OneofDecl:      "oneofField",
+					Opts:           ", opts...",
+				}),
+
+			Entry("Repeated field - V1",
+				&descriptor.FieldDescriptorProto{
+					Name:  &protoField,
+					Label: &labelRepeated,
+				},
+				protoField, goField, "string", mo, v1, false,
+				&Field{
+					Name:           "StringField",
+					ProtoName:      "ProtoField",
+					ProtoType:      "Pb",
+					ProtoToGoType:  "PbToStringList",
+					GoToProtoType:  "StringToPbList",
+					GoIsPointer:    false,
+					ProtoIsPointer: true,
+					UsePackage:     false,
+					OneofDecl:      "",
+					Opts:           ", opts...",
+				}),
+
+			Entry("Repeated field when name field found in target struct. - V1",
+				&descriptor.FieldDescriptorProto{
+					Name:  &protoField,
+					Label: &labelRepeated,
+				},
+				protoField, goField, "string", mo, v1, false,
+				&Field{
+					Name:           "StringField",
+					ProtoName:      "ProtoField",
+					ProtoType:      "Pb",
+					ProtoToGoType:  "PbToStringList",
+					GoToProtoType:  "StringToPbList",
+					GoIsPointer:    false,
+					ProtoIsPointer: true,
+					UsePackage:     false,
+					OneofDecl:      "",
+					Opts:           ", opts...",
+				}),
+
+			// Version 2 tests
+			Entry("Int64 - V2", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, v2, false, &Field{
+				Name:           "StringField",
+				ProtoName:      "ProtoField",
+				ProtoType:      "Pb",
+				ProtoToGoType:  "PbToMoTarget",
+				GoToProtoType:  "MoTargetToPb",
+				GoIsPointer:    false,
+				ProtoIsPointer: true,
+				UsePackage:     false,
+				OneofDecl:      "",
+				Opts:           ", opts...",
+			}),
+
+			Entry("Custom field - V2", &descriptor.FieldDescriptorProto{Name: &protoField, TypeName: &protoFieldTypeName}, protoField, goField, "int64", mo, v2, true, &Field{
+				Name:           "StringField",
+				ProtoName:      "ProtoField",
+				ProtoType:      "PbCustomType",
+				ProtoToGoType:  "PbCustomTypeToString",
+				GoToProtoType:  "StringToPbCustomType",
+				GoIsPointer:    false,
+				ProtoIsPointer: true,
+				UsePackage:     false,
+				OneofDecl:      "",
+				Opts:           ", opts...",
+			}),
+
+			Entry("With messageOption and empty oneof - V2", &descriptor.FieldDescriptorProto{Name: &protoField}, protoField, goField, "int64", mo, v2, false, &Field{
+				Name:           "StringField",
+				ProtoName:      "ProtoField",
+				ProtoType:      "Pb",
+				ProtoToGoType:  "PbToMoTarget",
+				GoToProtoType:  "MoTargetToPb",
+				GoIsPointer:    false,
+				ProtoIsPointer: true,
+				UsePackage:     false,
+				OneofDecl:      "",
+				Opts:           ", opts...",
+			}),
+
+			Entry("Repeated field - V2",
+				&descriptor.FieldDescriptorProto{
+					Name:  &protoField,
+					Label: &labelRepeated,
+				},
+				protoField, goField, "string", mo, v2, false,
+				&Field{
+					Name:           "StringField",
+					ProtoName:      "ProtoField",
+					ProtoType:      "Pb",
+					ProtoToGoType:  "PbToStringList",
+					GoToProtoType:  "StringToPbList",
+					GoIsPointer:    false,
+					ProtoIsPointer: true,
+					UsePackage:     false,
+					OneofDecl:      "",
+					Opts:           ", opts...",
+				}),
+
+			Entry("Repeated field when name field found in target struct. - V2",
+				&descriptor.FieldDescriptorProto{
+					Name:  &protoField,
+					Label: &labelRepeated,
+				},
+				protoField, goField, "string", mo, v2, false,
 				&Field{
 					Name:           "StringField",
 					ProtoName:      "ProtoField",
@@ -399,9 +593,14 @@ var _ = Describe("Field", func() {
 	})
 
 	Describe("processField", func() {
+		const (
+			v1 = int32(1)
+			// v2 = 2
+		)
 
 		DescribeTable("check result",
-			func(f *descriptor.FieldDescriptorProto, skip, embed bool, expected *Field, expectedErr error) {
+			func(f *descriptor.FieldDescriptorProto, skip, embed bool, version int32, expected *Field, expectedErr error) {
+				fConf := FileConfig{Version: version}
 
 				err := proto.SetExtension(f.Options, options.E_Skip, bp(skip))
 				Expect(err).NotTo(HaveOccurred())
@@ -409,7 +608,7 @@ var _ = Describe("Field", func() {
 				err = proto.SetExtension(f.Options, options.E_Embed, bp(embed))
 				Expect(err).NotTo(HaveOccurred())
 
-				field, err := processField(nil, f, subm, goStruct)
+				field, err := processField(nil, f, subm, goStruct, fConf)
 				if expectedErr == nil {
 					Expect(err).NotTo(HaveOccurred())
 				} else {
@@ -438,7 +637,7 @@ var _ = Describe("Field", func() {
 				TypeName: sp("int64"),
 				Type:     &typInt64,
 				Options:  &descriptor.FieldOptions{},
-			}, false, false, &Field{
+			}, false, false, v1, &Field{
 				Name:           "Int64Field",
 				ProtoName:      "Int64Field",
 				ProtoType:      "",
@@ -456,7 +655,7 @@ var _ = Describe("Field", func() {
 				TypeName: sp("int64"),
 				Type:     &typInt64,
 				Options:  &descriptor.FieldOptions{},
-			}, false, false, &Field{
+			}, false, false, v1, &Field{
 				Name:           "ID",
 				ProtoName:      "ID",
 				ProtoType:      "",
@@ -474,7 +673,7 @@ var _ = Describe("Field", func() {
 				TypeName: sp("int64"),
 				Type:     &typInt64,
 				Options:  &descriptor.FieldOptions{},
-			}, false, false, &Field{
+			}, false, false, v1, &Field{
 				Name:           "ID",
 				ProtoName:      "Id",
 				ProtoType:      "",
@@ -492,21 +691,21 @@ var _ = Describe("Field", func() {
 				TypeName: sp("int64"),
 				Type:     &typInt64,
 				Options:  &descriptor.FieldOptions{},
-			}, true, false, nil, newLoggableError("field skipped: int64_field")),
+			}, true, false, v1, nil, newLoggableError("field skipped: int64_field")),
 
 			Entry("Target field not found", &descriptor.FieldDescriptorProto{
 				Name:     sp("not_exists"),
 				TypeName: sp("int64"),
 				Type:     &typInt64,
 				Options:  &descriptor.FieldOptions{},
-			}, false, false, nil, pkgerrors.Wrap(errors.New("field not found in destination structure"), "NotExists")),
+			}, false, false, v1, nil, pkgerrors.Wrap(errors.New("field not found in destination structure"), "NotExists")),
 
 			Entry("embed", &descriptor.FieldDescriptorProto{
 				Name:     sp("PkgTypeField"),
 				TypeName: sp(".PkgType"),
 				Type:     &typMessage,
 				Options:  &descriptor.FieldOptions{},
-			}, false, true, &Field{
+			}, false, true, v1, &Field{
 				Name:           "PkgField",
 				ProtoName:      "PkgTypeField",
 				ProtoType:      "Pb",
@@ -524,7 +723,7 @@ var _ = Describe("Field", func() {
 				TypeName: sp(".google.protobuf.Timestamp"),
 				Type:     &typMessage,
 				Options:  &descriptor.FieldOptions{},
-			}, false, true, &Field{
+			}, false, true, v1, &Field{
 				Name:           "TimeField",
 				ProtoName:      "TimeField",
 				ProtoType:      "",
@@ -542,7 +741,7 @@ var _ = Describe("Field", func() {
 				TypeName: sp(".google.protobuf.StringValue"),
 				Type:     &typMessage,
 				Options:  &descriptor.FieldOptions{},
-			}, false, true, &Field{
+			}, false, true, v1, &Field{
 				Name:           "StringField",
 				ProtoName:      "StringField",
 				ProtoType:      "",
