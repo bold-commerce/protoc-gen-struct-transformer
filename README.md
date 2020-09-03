@@ -215,6 +215,10 @@ message Product {
   // field in model with arbitrary name.
   // Both options "map_as" and "map_to" can be used independently.
   string map_field_1 = 6 [ (transformer.map_as) = "MapField_1", (transformer.map_to) = "MapField1"];
+  // "custom" allows to use custom transformers for fields, which require extended transformation
+  // The plugin won't generate methods for this field,
+  // but rather expect it to be in the same package with the transformer file
+  CustomType custom_field [(transformer.custom) = true]
 }
 ```
 ### Run protoc

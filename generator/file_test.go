@@ -104,7 +104,7 @@ var _ = Describe("File", func() {
 				"message_name": messageOption{targetName: "go_struct_name", fullName: "", oneofDecl: ""},
 			}),
 
-			Entry("Messages with oneOf declaration", plugin.CodeGeneratorRequest{
+			Entry("Messages with oneOf declaration which does match to int64toString rule", plugin.CodeGeneratorRequest{
 				ProtoFile: []*descriptor.FileDescriptorProto{
 					&descriptor.FileDescriptorProto{
 						Name:    sp("protofile"),
@@ -115,12 +115,39 @@ var _ = Describe("File", func() {
 								OneofDecl: []*descriptor.OneofDescriptorProto{
 									{Name: sp("oneof_decl_name")},
 								},
+								Field: []*descriptor.FieldDescriptorProto{
+									{Name: sp("int64_value")},
+									{Name: sp("string_value")},
+								},
 							},
 						},
 					},
 				},
 			}, map[string]MessageOption{
 				"message_name": messageOption{targetName: "", fullName: "", oneofDecl: "oneof_decl_name"},
+			}),
+
+			Entry("Messages with oneOf declaration which does not match to int64toString", plugin.CodeGeneratorRequest{
+				ProtoFile: []*descriptor.FileDescriptorProto{
+					&descriptor.FileDescriptorProto{
+						Name:    sp("protofile"),
+						Package: sp("pb"),
+						MessageType: []*descriptor.DescriptorProto{
+							{
+								Name: sp("message_name"),
+								OneofDecl: []*descriptor.OneofDescriptorProto{
+									{Name: sp("oneof_decl_name")},
+								},
+								Field: []*descriptor.FieldDescriptorProto{
+									{Name: sp("some_field")},
+									{Name: sp("some_other_field")},
+								},
+							},
+						},
+					},
+				},
+			}, map[string]MessageOption{
+				"message_name": messageOption{targetName: "", fullName: "", oneofDecl: ""},
 			}),
 		)
 	})

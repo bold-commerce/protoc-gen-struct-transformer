@@ -8,10 +8,13 @@ import (
 
 type (
 	Product struct {
-		ID       int    `db:"id" json:"id"`
-		Name     string `db:"name" json:"name"`
-		One      string `db:"one" json:"one"`
-		SecondID string `db:"two" json:"two"`
+		ID                int    `db:"id" json:"id"`
+		Name              string `db:"name" json:"name"`
+		One               string `db:"one" json:"one"`
+		SecondID          string `db:"two" json:"two"`
+		CustomField       string `db:"custom_field" json:"custom_field"`
+		CustomOneof       string `db:"custom_oneof" json:"custom_oneof"`
+		NotsupportedOneof string `db:"notsupported_oneof" json:"notsupported_oneof"`
 	}
 
 	Order struct {

@@ -1,3 +1,6 @@
+// TODO:  This is a specific case of OneOf which is used by BoldCommerce and needs to be removed from the plugin.
+//        This file will be deprecated and removed together with OneOfDecl field once BoldCommerce update their code
+
 package generator
 
 import (
