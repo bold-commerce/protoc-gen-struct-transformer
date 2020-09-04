@@ -224,8 +224,11 @@ type Field struct {
 	// It true, field GoToProtoType and ProtoToGoType functions will be used
 	// with prefix.
 	UsePackage bool
-	OneofDecl  string
-	Opts       string
+	// The field has a value when it is used for the oneof migration from Int64 to String for the field
+	// TODO:  This is a specific case of OneOf which is used by BoldCommerce and needs to be removed from the plugin.
+	//        This field will be deprecated together with oneof.go once BoldCommerce update their code
+	OneofDecl string
+	Opts      string
 }
 
 // IsOneof returns true if Field has non-empty OneOf declaration.

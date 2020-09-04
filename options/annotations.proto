@@ -38,4 +38,6 @@ extend google.protobuf.FieldOptions {
   //
   // string street_1 = 1; -> pb.go Street_1 instead Street1
   string map_as = 5304;
+  // If true, the custom transformer will be used for the field.
+  bool custom = 5305;
 }

@@ -78,6 +78,7 @@ func processSubMessage(w io.Writer,
 	pname, gname, pbtype string,
 	mo MessageOption,
 	goStructFields source.Structure,
+	customTransformer bool,
 ) (*Field, error) {
 
 	if fdp == nil {
@@ -95,13 +96,24 @@ func processSubMessage(w io.Writer,
 	g2p := ""
 
 	if mo != nil {
-		if mo.OneofDecl() != "" {
+		if mo.OneofDecl() != "" && !customTransformer {
 			pb = strcase.ToCamel(goStructFields[gname].Type)
 		} else {
 			pb, pbtype = mo.Target(), pb
 		}
 
 		pb = strcase.ToCamel(pb)
+	}
+
+	// custom type converter (methods won't be generated)
+	if customTransformer {
+		pb = strcase.ToCamel(goStructFields[gname].Type)
+		if ln := lastName(pb); strings.Contains(pb, ".") {
+			pb = strcase.ToCamel(ln)
+		}
+
+		ptype := lastName(fdp.GetTypeName())
+		pbtype = fmt.Sprintf("Pb%s", strcase.ToCamel(ptype))
 	}
 
 	if l := fdp.Label; l != nil && *l == descriptor.FieldDescriptorProto_LABEL_REPEATED {
@@ -142,7 +154,10 @@ func processSubMessage(w io.Writer,
 			return nil, errors.New("mo is nil")
 		}
 		f.GoIsPointer = fm.IsPointer
-		f.OneofDecl = mo.OneofDecl()
+		if !customTransformer {
+			// OneofDecl is used for the BoldCommerce-specific implementation of OneOf for the migration from Int64ToString
+			f.OneofDecl = mo.OneofDecl()
+		}
 	}
 
 	return f, nil
@@ -256,10 +271,13 @@ func processField(
 			return wktgoogleProtobufString(pname, gname, gf.Type), nil
 		}
 
+		// if the field has the custom=true - the custom transformer will be used for this field
+		customTransformer := getBoolOption(fdp.Options, options.E_Custom)
+
 		// Submessage has a name like ".package.type", 1: removes first ".".
 		mo, _ := subMessages[t[1:]]
 		// TODO(ekhabarov): pass gf instead of goStructFields
-		return processSubMessage(w, fdp, pname, gname, t, mo, goStructFields)
+		return processSubMessage(w, fdp, pname, gname, t, mo, goStructFields, customTransformer)
 	}
 
 	return processSimpleField(w, pname, gname, fdp.Type, gf)

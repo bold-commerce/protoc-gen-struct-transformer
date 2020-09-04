@@ -17,6 +17,25 @@ message TheOne{
   }
 }
 
+message NotSupportedOneOf{
+  oneof the_decl {
+    bool bool_value = 1;
+    string string_value = 2;
+  }
+}
+
+message CustomOneof{
+  oneof value {
+    string string_value = 1;
+    int64 int64_value = 2;
+  }
+}
+
+
+message CustomType{
+  string value = 1;
+} 
+
 message Product {
   option (transformer.go_struct) = "Product";
 
@@ -24,6 +43,16 @@ message Product {
   string name = 2;
   TheOne one = 3;
   TheOne second_id = 4;
+  // Example of the custom transformer for the struct
+  CustomType custom_field = 5 [(transformer.custom) = true];
+    // Example of the custom transformer for the struct with oneof type in it
+  CustomOneof custom_oneof = 6 [(transformer.custom) = true];
+  // Currently the plugin does not support oneof types 
+  // rather than the specific example with `int64_value` and `string_value`
+  // In current implementation it generates the PbToPtrVal and ToPbValPtr 
+  // TODO: change these method names to include either field name or field type to it
+  //       Changing method names will break backward compatibility with previous versions of the plugin
+  NotSupportedOneOf notsupported_oneof = 7;
 }
 
 message Order {

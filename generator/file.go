@@ -69,7 +69,25 @@ func CollectAllMessages(req plugin.CodeGeneratorRequest) (MessageOptionList, err
 			}
 
 			if len(m.OneofDecl) > 0 {
-				so.oneofDecl = *m.OneofDecl[0].Name
+				hasInt64Value := false
+				hasStringValue := false
+				// Check if it implements a specific case of migration from Int64ToString
+				for _, field := range m.Field {
+					if field.Name != nil {
+						if *field.Name == "int64_value" {
+							hasInt64Value = true
+						}
+						if *field.Name == "string_value" {
+							hasStringValue = true
+						}
+					}
+				}
+
+				int64ToStringOneOf := len(m.Field) == 2 && hasInt64Value && hasStringValue
+
+				if int64ToStringOneOf && len(m.OneofDecl) == 1 {
+					so.oneofDecl = *m.OneofDecl[0].Name
+				}
 			}
 
 			mol[fmt.Sprintf("%s.%s", *f.Package, *m.Name)] = so
