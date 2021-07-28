@@ -11,6 +11,7 @@ import (
 	"github.com/bold-commerce/protoc-gen-struct-transformer/source"
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
+	"github.com/gogo/protobuf/protoc-gen-gogo/generator"
 	plugin "github.com/gogo/protobuf/protoc-gen-gogo/plugin"
 )
 
@@ -61,40 +62,54 @@ func CollectAllMessages(req plugin.CodeGeneratorRequest) (MessageOptionList, err
 	mol := MessageOptionList{}
 
 	for _, f := range req.ProtoFile {
+		so := messageOption{
+			packageName: *f.Package,
+		}
 		for _, m := range f.MessageType {
-			structName, _ := extractStructNameOption(m)
-
-			so := messageOption{
-				targetName: structName,
-			}
-
-			if len(m.OneofDecl) > 0 {
-				hasInt64Value := false
-				hasStringValue := false
-				// Check if it implements a specific case of migration from Int64ToString
-				for _, field := range m.Field {
-					if field.Name != nil {
-						if *field.Name == "int64_value" {
-							hasInt64Value = true
-						}
-						if *field.Name == "string_value" {
-							hasStringValue = true
-						}
-					}
-				}
-
-				int64ToStringOneOf := len(m.Field) == 2 && hasInt64Value && hasStringValue
-
-				if int64ToStringOneOf && len(m.OneofDecl) == 1 {
-					so.oneofDecl = *m.OneofDecl[0].Name
-				}
-			}
-
-			mol[fmt.Sprintf("%s.%s", *f.Package, *m.Name)] = so
+			collectMessage(m, so, mol)
 		}
 	}
 
 	return mol, nil
+}
+
+func collectMessage(m *descriptor.DescriptorProto, so messageOption, mol MessageOptionList) {
+	structName, _ := extractStructNameOption(m)
+
+	if so.fullName == "" {
+		msg := fmt.Sprintf("%s.%s", so.packageName, m.GetName())
+		so.fullName = msg
+	} else {
+		so.fullName += "." + m.GetName()
+	}
+	so.targetName = structName
+	if len(m.OneofDecl) > 0 {
+		hasInt64Value := false
+		hasStringValue := false
+		// Check if it implements a specific case of migration from Int64ToString
+		for _, field := range m.Field {
+			if field.Name != nil {
+				if *field.Name == "int64_value" {
+					hasInt64Value = true
+				}
+				if *field.Name == "string_value" {
+					hasStringValue = true
+				}
+			}
+		}
+
+		int64ToStringOneOf := len(m.Field) == 2 && hasInt64Value && hasStringValue
+
+		if int64ToStringOneOf && len(m.OneofDecl) == 1 {
+			so.oneofDecl = *m.OneofDecl[0].Name
+		}
+	}
+
+	mol[so.fullName] = so
+
+	for _, nt := range m.NestedType {
+		collectMessage(nt, so, mol)
+	}
 }
 
 // modelsPath returns absolute path to file with models or an error if
@@ -144,28 +159,9 @@ func ProcessFile(f *descriptor.FileDescriptorProto, packageName, helperPackageNa
 	var data []*Data
 
 	for _, m := range f.MessageType {
-		fields, sno, err := processMessage(w, m, messages, structs, debug)
-		if err != nil {
-			if e, ok := err.(loggableError); ok {
-				p(w, "// %s\n", e)
-				continue
-			}
+		if err := recursiveProcessMessage(w, &data, m, "", messages, structs, helperPackageName, protoPackage, repoPackage, debug); err != nil {
 			return "", "", err
 		}
-
-		prefixFields(fields, *helperPackageName)
-
-		data = append(data,
-			&Data{
-				Src:        m.GetName(),
-				SrcPref:    protoPackage,
-				SrcFn:      "Pb",
-				SrcPointer: "*",
-				Dst:        sno,
-				DstPref:    repoPackage,
-				DstFn:      sno,
-				Fields:     fields,
-			})
 	}
 
 	if err := execTemplate(w, data); err != nil {
@@ -184,6 +180,44 @@ func ProcessFile(f *descriptor.FileDescriptorProto, packageName, helperPackageNa
 	absPath := strings.Replace(filepath.Join(dir, pn, filename), ".proto", "_transformer.go", -1)
 
 	return absPath, w.String(), nil
+}
+
+func recursiveProcessMessage(w io.Writer, data *[]*Data, m *descriptor.DescriptorProto, prefix string,
+	messages map[string]MessageOption, structs source.StructureList, helperPackageName *string,
+	protoPackage string, repoPackage string, debug bool,
+) error {
+	fields, sno, err := processMessage(w, m, messages, structs, debug)
+	if err != nil {
+		if e, ok := err.(loggableError); ok {
+			p(w, "// %s\n", e)
+			return nil
+		}
+		return err
+	}
+
+	prefixFields(fields, *helperPackageName)
+
+	var typeName []string
+	if prefix != "" {
+		typeName = append(typeName, prefix)
+	}
+	typeName = append(typeName, m.GetName())
+	src := generator.CamelCaseSlice(typeName)
+	*data = append(*data,
+		&Data{
+			Src:        src,
+			SrcPref:    protoPackage,
+			SrcFn:      "Pb",
+			SrcPointer: "*",
+			Dst:        sno,
+			DstPref:    repoPackage,
+			DstFn:      sno,
+			Fields:     fields,
+		})
+	for _, nt := range m.NestedType {
+		return recursiveProcessMessage(w, data, nt, src, messages, structs, helperPackageName, protoPackage, repoPackage, debug)
+	}
+	return nil
 }
 
 // execTemplate executes main template twice with given data, second pass is

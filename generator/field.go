@@ -9,6 +9,7 @@ import (
 	"github.com/bold-commerce/protoc-gen-struct-transformer/options"
 	"github.com/bold-commerce/protoc-gen-struct-transformer/source"
 	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
+	"github.com/gogo/protobuf/protoc-gen-gogo/generator"
 	"github.com/iancoleman/strcase"
 	pkgerrors "github.com/pkg/errors"
 )
@@ -65,6 +66,12 @@ func wktgoogleProtobufString(pname, gname, ftype string) *Field {
 	}
 }
 
+func getProtoType(mo MessageOption) string {
+	ptype := strings.TrimPrefix(mo.Full(), mo.Package()+".")
+	pl := strings.Split(ptype, ".")
+	return generator.CamelCaseSlice(pl)
+}
+
 // processSubMessage processes sub messages of current message. Sub message is
 // a message type which is used as field type.
 //
@@ -75,10 +82,9 @@ func wktgoogleProtobufString(pname, gname, ftype string) *Field {
 // message B { A a_field = 1; }
 func processSubMessage(w io.Writer,
 	fdp *descriptor.FieldDescriptorProto,
-	pname, gname, pbtype string,
+	pname, gname string,
 	mo MessageOption,
-	goStructFields source.Structure,
-	customTransformer bool,
+	gf source.FieldInfo,
 ) (*Field, error) {
 
 	if fdp == nil {
@@ -89,75 +95,60 @@ func processSubMessage(w io.Writer,
 		return nil, errors.New("input field name is nil")
 	}
 
+	if mo == nil {
+		return nil, errors.New("mo is nil")
+	}
+
 	tpl := "%sTo%s"
 	pb := "Pb"
+	pbtype := getProtoType(mo)
 
 	p2g := ""
 	g2p := ""
 
-	if mo != nil {
-		if mo.OneofDecl() != "" && !customTransformer {
-			pb = strcase.ToCamel(goStructFields[gname].Type)
-		} else {
-			pb, pbtype = mo.Target(), pb
-		}
-
-		pb = strcase.ToCamel(pb)
-	}
-
+	// if the field has the custom=true - the custom transformer will be used for this field
+	customTransformer := getBoolOption(fdp.Options, options.E_Custom)
 	// custom type converter (methods won't be generated)
 	if customTransformer {
-		pb = strcase.ToCamel(goStructFields[gname].Type)
-		if ln := lastName(pb); strings.Contains(pb, ".") {
-			pb = strcase.ToCamel(ln)
-		}
-
-		ptype := lastName(fdp.GetTypeName())
-		pbtype = fmt.Sprintf("Pb%s", strcase.ToCamel(ptype))
+		pb = strcase.ToCamel(gf.Type)
+		pbtype = fmt.Sprintf("Pb%s", pbtype)
+	} else if mo.OneofDecl() != "" {
+		pb = strcase.ToCamel(gf.Type)
+	} else {
+		pb, pbtype = strcase.ToCamel(mo.Target()), pb
 	}
 
 	if l := fdp.Label; l != nil && *l == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 		tpl += "List"
-		if g, ok := goStructFields[gname]; ok {
-			pb = strcase.ToCamel(g.Type)
-		}
+		// pb = strcase.ToCamel(gf.Type)
 	}
 
+	fname := strcase.ToCamel(gname)
+	fpName := strcase.ToCamel(*fdp.Name)
 	// embedded fields
-	fname := gname
 	if isEmbed := extractEmbedOption(fdp.Options); isEmbed {
 		// if sub message is embedded use type name as field name.
 		fname = pb
-		pb = strcase.ToCamel(pb)
+		fpName = getProtoType(mo)
 	}
-
-	if ln := lastName(pbtype); strings.Contains(pbtype, ".") {
-		pbtype = strcase.ToCamel(ln)
-	}
-	isNullable := extractNullOption(fdp)
 
 	p2g = fmt.Sprintf(tpl, pbtype, pb)
 	g2p = fmt.Sprintf(tpl, pb, pbtype)
 
 	f := &Field{
-		Name:           strcase.ToCamel(fname),
-		ProtoName:      strcase.ToCamel(*fdp.Name),
+		Name:           fname,
+		ProtoName:      fpName,
 		ProtoType:      pbtype,
 		ProtoToGoType:  p2g,
 		GoToProtoType:  g2p,
 		Opts:           ", opts...",
-		ProtoIsPointer: isNullable,
+		ProtoIsPointer: extractNullOption(fdp),
+		GoIsPointer:    gf.IsPointer,
 	}
 
-	if fm, ok := goStructFields[gname]; ok {
-		if mo == nil {
-			return nil, errors.New("mo is nil")
-		}
-		f.GoIsPointer = fm.IsPointer
-		if !customTransformer {
-			// OneofDecl is used for the BoldCommerce-specific implementation of OneOf for the migration from Int64ToString
-			f.OneofDecl = mo.OneofDecl()
-		}
+	if !customTransformer {
+		// OneofDecl is used for the BoldCommerce-specific implementation of OneOf for the migration from Int64ToString
+		f.OneofDecl = mo.OneofDecl()
 	}
 
 	return f, nil
@@ -241,10 +232,8 @@ func processField(
 	// check if field exists in destination/Go structure.
 	gf, ok := goStructFields[gname]
 	if !ok {
-		// do not check for embedded fields.
-		if isEmbed := extractEmbedOption(fdp.Options); !isEmbed {
-			return nil, pkgerrors.Wrap(errors.New("field not found in destination structure"), gname)
-		}
+		// ensure field in destination structure
+		return nil, pkgerrors.Wrap(errors.New("field not found in destination structure"), gname)
 	}
 
 	p(w, "\n\n// ===============================\n")
@@ -271,13 +260,9 @@ func processField(
 			return wktgoogleProtobufString(pname, gname, gf.Type), nil
 		}
 
-		// if the field has the custom=true - the custom transformer will be used for this field
-		customTransformer := getBoolOption(fdp.Options, options.E_Custom)
-
 		// Submessage has a name like ".package.type", 1: removes first ".".
 		mo, _ := subMessages[t[1:]]
-		// TODO(ekhabarov): pass gf instead of goStructFields
-		return processSubMessage(w, fdp, pname, gname, t, mo, goStructFields, customTransformer)
+		return processSubMessage(w, fdp, pname, gname, mo, gf)
 	}
 
 	return processSimpleField(w, pname, gname, fdp.Type, gf)

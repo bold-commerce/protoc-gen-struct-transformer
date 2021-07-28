@@ -31,11 +31,11 @@ func processOneofFields(w io.Writer, data []*Data) error {
 			pt := f.ProtoType
 			gt := strings.Split(f.GoToProtoType, "To")[0]
 
-			if _, ok := added[gt]; ok {
+			if _, ok := added[pt]; ok {
 				continue
 			}
 
-			added[gt] = struct{}{}
+			added[pt] = struct{}{}
 
 			od := OneofData{
 				ProtoType:    pt,
@@ -55,8 +55,6 @@ func processOneofFields(w io.Writer, data []*Data) error {
 			if err := t.Execute(w, od); err != nil {
 				return err
 			}
-			// Add oneof function for first found field only.
-			break
 		}
 	}
 	return nil

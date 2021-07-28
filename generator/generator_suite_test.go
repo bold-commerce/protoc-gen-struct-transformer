@@ -61,22 +61,31 @@ var (
 	}
 
 	mo = messageOption{
-		targetName: "moTarget",
-		fullName:   "full.name",
+		targetName:  "moTarget",
+		fullName:    "full.Target",
+		packageName: "full",
+	}
+	moCus = messageOption{
+		targetName:  "",
+		fullName:    "full.CustomType",
+		packageName: "full",
 	}
 	moWithOneOf = messageOption{
-		targetName: "target",
-		fullName:   "full.name",
-		oneofDecl:  "oneofField",
+		targetName:  "target",
+		fullName:    "full.OneOf",
+		oneofDecl:   "oneofField",
+		packageName: "full",
 	}
 	moPkgField = messageOption{
-		targetName: "pkgField",
-		fullName:   "full.name",
+		targetName:  "pkgField",
+		fullName:    "full.PkgField",
+		packageName: "full",
 	}
 
 	subm = map[string]MessageOption{
-		"FieldName": mo,
-		"two":       moWithOneOf,
-		"PkgType":   moPkgField,
+		"full.Target":     mo,
+		"full.OneOf":      moWithOneOf,
+		"full.PkgField":   moPkgField,
+		"full.CustomType": moCus,
 	}
 )

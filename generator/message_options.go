@@ -14,6 +14,9 @@ type MessageOption interface {
 	Omitted() bool
 	// Returns Oneof message name.
 	OneofDecl() string
+
+	// Return package name of message
+	Package() string
 }
 
 // MessageOptionList is a list of proto message option. Map key is a message
@@ -24,8 +27,8 @@ type MessageOptionList map[string]MessageOption
 func (sol MessageOptionList) String() string {
 	s := "\n"
 	for k, v := range sol {
-		s += fmt.Sprintf("// %q: target: %q, Omitted: %t, OneofDecl: %q\n",
-			k, v.Target(), v.Omitted(), v.OneofDecl())
+		s += fmt.Sprintf("// %q: target: %q, Omitted: %t, OneofDecl: %q, Package: %q\n",
+			k, v.Target(), v.Omitted(), v.OneofDecl(), v.Package())
 	}
 
 	return s
@@ -38,6 +41,8 @@ type messageOption struct {
 	fullName string
 	// OneOf name.
 	oneofDecl string
+
+	packageName string
 }
 
 func (so messageOption) Target() string {
@@ -54,4 +59,8 @@ func (so messageOption) Omitted() bool {
 
 func (so messageOption) OneofDecl() string {
 	return so.oneofDecl
+}
+
+func (so messageOption) Package() string {
+	return so.packageName
 }

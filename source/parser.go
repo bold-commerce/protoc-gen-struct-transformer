@@ -7,7 +7,6 @@ import (
 	"go/token"
 	"io"
 	"reflect"
-	"strconv"
 )
 
 // inspect is a function which is run for each node in source file. See go/ast
@@ -36,32 +35,39 @@ func inspect(output StructureList) func(n ast.Node) bool {
 			output[structName] = Structure{}
 		}
 
-		embeddedCounter := 0
 		for _, field := range s.Fields.List {
-			fname := "embedded_"
-			// Embedded strcuts have no names.
+			var fname string
 			if field.Names != nil {
 				fname = field.Names[0].Name
-			} else {
-				fname += strconv.Itoa(embeddedCounter)
-				embeddedCounter++
 			}
 
 			switch t := field.Type.(type) {
 			case *ast.Ident: // simple types e.g. int, string, etc.
+				if fname == "" {
+					fname = t.Name
+				}
 				output[structName][fname] = FieldInfo{Type: t.Name}
 
 			case *ast.SelectorExpr: // types like time.Time, time.Duration, nulls.String
 				typ := fmt.Sprintf("%s.%s", t.X.(*ast.Ident).Name, t.Sel.Name)
+				if fname == "" {
+					fname = t.Sel.Name
+				}
 				output[structName][fname] = FieldInfo{Type: typ}
 
 			case *ast.StarExpr: // pointer to something
 				switch se := t.X.(type) {
 				case *ast.Ident: // *SomeStruct, *string, *int etc.
 					typ := se.Name
+					if fname == "" {
+						fname = typ
+					}
 					output[structName][fname] = FieldInfo{Type: typ, IsPointer: true}
 				case *ast.SelectorExpr: // *time.Time
 					typ := fmt.Sprintf("%s.%s", se.X.(*ast.Ident).Name, se.Sel.Name)
+					if fname == "" {
+						fname = se.Sel.Name
+					}
 					output[structName][fname] = FieldInfo{Type: typ, IsPointer: true}
 				default:
 					typ := fmt.Sprintf("%s", reflect.TypeOf(t))

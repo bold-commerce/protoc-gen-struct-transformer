@@ -65,6 +65,7 @@ var _ = Describe("File", func() {
 					Expect(m.Target()).To(Equal(e.Target()))
 					Expect(m.Full()).To(Equal(e.Full()))
 					Expect(m.OneofDecl()).To(Equal(e.OneofDecl()))
+					Expect(m.Package()).To(Equal(e.Package()))
 				}
 			},
 
@@ -89,7 +90,7 @@ var _ = Describe("File", func() {
 					},
 				},
 			}, map[string]MessageOption{
-				"message_name": messageOption{targetName: "", fullName: "", oneofDecl: ""},
+				"message_name": messageOption{targetName: "", fullName: "pb.message_name", oneofDecl: "", packageName: "pb"},
 			}),
 
 			Entry("Messages with go_struct option", plugin.CodeGeneratorRequest{
@@ -101,7 +102,7 @@ var _ = Describe("File", func() {
 					},
 				},
 			}, map[string]MessageOption{
-				"message_name": messageOption{targetName: "go_struct_name", fullName: "", oneofDecl: ""},
+				"message_name": messageOption{targetName: "go_struct_name", fullName: "pb.message_name", oneofDecl: "", packageName: "pb"},
 			}),
 
 			Entry("Messages with oneOf declaration which does match to int64toString rule", plugin.CodeGeneratorRequest{
@@ -124,7 +125,7 @@ var _ = Describe("File", func() {
 					},
 				},
 			}, map[string]MessageOption{
-				"message_name": messageOption{targetName: "", fullName: "", oneofDecl: "oneof_decl_name"},
+				"message_name": messageOption{targetName: "", fullName: "pb.message_name", oneofDecl: "oneof_decl_name", packageName: "pb"},
 			}),
 
 			Entry("Messages with oneOf declaration which does not match to int64toString", plugin.CodeGeneratorRequest{
@@ -147,7 +148,7 @@ var _ = Describe("File", func() {
 					},
 				},
 			}, map[string]MessageOption{
-				"message_name": messageOption{targetName: "", fullName: "", oneofDecl: ""},
+				"message_name": messageOption{targetName: "", fullName: "pb.message_name", oneofDecl: "", packageName: "pb"},
 			}),
 		)
 	})

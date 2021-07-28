@@ -9,7 +9,7 @@ import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
-	_ "github.com/golang/protobuf/ptypes/timestamp"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -336,7 +336,11 @@ type Product struct {
 	CustomField *CustomType `protobuf:"bytes,5,opt,name=custom_field,json=customField,proto3" json:"custom_field,omitempty"`
 	// Example of the custom transformer for the struct with oneof type in it
 	CustomOneof *CustomOneof `protobuf:"bytes,6,opt,name=custom_oneof,json=customOneof,proto3" json:"custom_oneof,omitempty"`
-	// Currently the plugin does not support oneof types rather than the specific example with `int64_value` and `string_value`
+	// Currently the plugin does not support oneof types
+	// rather than the specific example with `int64_value` and `string_value`
+	// In current implementation it generates the PbToPtrVal and ToPbValPtr
+	// TODO: change these method names to include either field name or field type to it
+	//       Changing method names will break backward compatibility with previous versions of the plugin
 	NotsupportedOneof *NotSupportedOneOf `protobuf:"bytes,7,opt,name=notsupported_oneof,json=notsupportedOneof,proto3" json:"notsupported_oneof,omitempty"`
 }
 
@@ -2485,10 +2489,7 @@ func (m *TheOne) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -2591,10 +2592,7 @@ func (m *NotSupportedOneOf) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -2696,10 +2694,7 @@ func (m *CustomOneof) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -2781,10 +2776,7 @@ func (m *CustomType) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -3065,10 +3057,7 @@ func (m *Product) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -3245,10 +3234,7 @@ func (m *Order) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -3349,10 +3335,7 @@ func (m *Address) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -3620,10 +3603,7 @@ func (m *Customer) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -3743,10 +3723,7 @@ func (m *LineItemUsage) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -3930,10 +3907,7 @@ func (m *LineItem) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -4016,10 +3990,7 @@ func (m *Value2Pointer) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -4105,10 +4076,7 @@ func (m *Pointer2Value) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -4158,10 +4126,7 @@ func (m *SkippedMessageOne) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -4211,10 +4176,7 @@ func (m *SkippedMessageTwo) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -4474,10 +4436,7 @@ func (m *Timer) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
@@ -4622,10 +4581,7 @@ func (m *Ints) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMessage
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMessage
 			}
 			if (iNdEx + skippy) > l {
