@@ -126,7 +126,7 @@ func processSubMessage(w io.Writer,
 	fname := strcase.ToCamel(gname)
 	fpName := strcase.ToCamel(*fdp.Name)
 	// embedded fields
-	if isEmbed := extractEmbedOption(fdp.Options); isEmbed {
+	if isEmbed := extractEmbedOption(fdp); isEmbed {
 		// if sub message is embedded use type name as field name.
 		fname = pb
 		fpName = getProtoType(mo)

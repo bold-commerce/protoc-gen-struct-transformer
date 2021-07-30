@@ -82,8 +82,8 @@ func getBoolOption(m proto.Message, opt *proto.ExtensionDesc) bool {
 
 // extractEmbedOption returns true if proto.Message has an option
 // transformer.embed which equals to true.
-func extractEmbedOption(m proto.Message) bool {
-	return getBoolOption(m, options.E_Embed)
+func extractEmbedOption(f *descriptor.FieldDescriptorProto) bool {
+	return gogoproto.IsEmbed(f)
 }
 
 // extractSkipOption return value of transformer.skip option or false if

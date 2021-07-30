@@ -5,6 +5,7 @@ import (
 
 	"github.com/bold-commerce/protoc-gen-struct-transformer/options"
 	"github.com/bold-commerce/protoc-gen-struct-transformer/source"
+	"github.com/gogo/protobuf/gogoproto"
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
 	. "github.com/onsi/ginkgo"
@@ -377,7 +378,7 @@ var _ = Describe("Field", func() {
 				err := proto.SetExtension(f.Options, options.E_Skip, bp(skip))
 				Expect(err).NotTo(HaveOccurred())
 
-				err = proto.SetExtension(f.Options, options.E_Embed, bp(embed))
+				err = proto.SetExtension(f.Options, gogoproto.E_Embed, bp(embed))
 				Expect(err).NotTo(HaveOccurred())
 
 				field, err := processField(nil, f, subm, goStruct)
