@@ -215,7 +215,10 @@ func recursiveProcessMessage(w io.Writer, data *[]*Data, m *descriptor.Descripto
 			Fields:     fields,
 		})
 	for _, nt := range m.NestedType {
-		return recursiveProcessMessage(w, data, nt, src, messages, structs, helperPackageName, protoPackage, repoPackage, debug)
+		err := recursiveProcessMessage(w, data, nt, src, messages, structs, helperPackageName, protoPackage, repoPackage, debug)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
