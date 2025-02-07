@@ -4,7 +4,8 @@ syntax = "proto3";
 // fields.
 // Options are used for customizing transformation process.
 package transformer;
-option go_package = "options";
+
+option go_package = "github.com/bold-commerce/protoc-gen-struct-transformer/options";
 
 import "google/protobuf/descriptor.proto";
 
