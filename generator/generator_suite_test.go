@@ -5,7 +5,7 @@ import (
 
 	"github.com/bold-commerce/protoc-gen-struct-transformer/source"
 	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
